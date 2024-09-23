@@ -1,4 +1,4 @@
-package com.udit.todoit.main_activity.navigation
+package com.udit.todoit.entry_point.main_activity.navigation
 
 import kotlinx.serialization.Serializable
 

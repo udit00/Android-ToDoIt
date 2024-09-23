@@ -1,4 +1,4 @@
-package com.udit.todoit.main_activity.ui.theme
+package com.udit.todoit.entry_point.main_activity.ui.theme
 
 import android.app.Activity
 import android.os.Build

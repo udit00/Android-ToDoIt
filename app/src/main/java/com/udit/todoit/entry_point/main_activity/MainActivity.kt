@@ -1,4 +1,4 @@
-package com.udit.todoit.main_activity
+package com.udit.todoit.entry_point.main_activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,12 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.udit.todoit.ui.login.LoginScreen
-import com.udit.todoit.main_activity.navigation.Screen
-import com.udit.todoit.main_activity.ui.theme.ToDoItTheme
+import com.udit.todoit.ui.login.view.LoginScreen
+import com.udit.todoit.entry_point.main_activity.navigation.Screen
+import com.udit.todoit.entry_point.main_activity.ui.theme.ToDoItTheme
 import com.udit.todoit.ui.home.HomeScreen
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class MainActivity : ComponentActivity() {
+@AndroidEntryPoint
+class MainActivity @Inject constructor() : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

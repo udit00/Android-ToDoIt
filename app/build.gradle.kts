@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "2.0.20"
 }
 
@@ -68,6 +70,9 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.volley)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.hilt.android.compiler)
 
 
     //
@@ -80,3 +85,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+kapt {
+    correctErrorTypes = true
+}
+
