@@ -2,10 +2,21 @@ package com.udit.todoit.ui.login.model
 
 import com.android.volley.toolbox.Volley
 import com.udit.todoit.api.Api
+import org.json.JSONObject
 import javax.inject.Inject
 
 
 class LoginRepository @Inject constructor(private val api: Api) {
+
+
+
+    suspend fun userLogin(params: Map<String, String>) {
+        api.post("userLogin", params, {
+
+        }, {
+
+        })
+    }
 
 //    fun userLogin(params: Map<String, String>) {
 //        api.get(params)

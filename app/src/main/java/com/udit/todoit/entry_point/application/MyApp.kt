@@ -14,19 +14,5 @@ class MyApp: Application() {
         super.onCreate()
     }
 
-    init {
 
-        val cache: Cache = DiskBasedCache(cacheDir, 1024 * 1024)
-
-
-        // Set up the network to use HttpURLConnection as the HTTP client.
-        val network = BasicNetwork(HurlStack())
-
-        // Instantiate the RequestQueue with the cache and network. Start the queue.
-        val requestQueue = RequestQueue(cache, network).apply {
-            start()
-        }
-
-
-    }
 }

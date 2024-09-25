@@ -1,20 +1,30 @@
 package com.udit.todoit.hilt
 
 import android.content.Context
+import com.udit.todoit.api.Api
 import com.udit.todoit.entry_point.application.MyApp
+import com.udit.todoit.ui.login.model.LoginRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class MyApplicationModule {
+object MyApplicationModule {
 
     @Provides
+    @Singleton
     fun provideMainApplicationInstance(@ApplicationContext context: Context): MyApp {
         return context as MyApp
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiPadhaiApi(myApp: MyApp): Api {
+        return Api(myApp)
     }
 
 }
