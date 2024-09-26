@@ -4,14 +4,14 @@ import android.util.Log
 import com.android.volley.Cache
 import com.android.volley.Request.Method
 import com.android.volley.RequestQueue
-import com.android.volley.Response
 import com.android.volley.toolbox.BasicNetwork
 import com.android.volley.toolbox.DiskBasedCache
 import com.android.volley.toolbox.HurlStack
 import com.android.volley.toolbox.JsonObjectRequest
-import com.udit.todoit.api.data.ApiPadhai
+import com.google.gson.Gson
+import com.udit.todoit.api.data.apipadhai.ApiPadhai
+import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.entry_point.application.MyApp
-import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -24,13 +24,13 @@ open class VolleyImpl @Inject constructor(private val myApp: MyApp): ApiPadhai {
         RequestQueue(cache, network).apply { start() }
     }
 
-    suspend fun logApiResponse(apiName: String, jsonObject: JSONObject) {
+    fun logApiResponse(apiName: String, jsonObject: JSONObject) {
         Log.d("VOLLEY_API_RESPONSE", "----------- START --------------")
         Log.d("VOLLEY_API_RESPONSE", apiName)
         Log.d("VOLLEY_API", jsonObject.toString(1))
     }
 
-    fun getUrlWithParams(baseUrlWithApiName: String, params: Map<String, String>): String {
+    private fun getUrlWithParams(baseUrlWithApiName: String, params: Map<String, String>): String {
         val finalUrl: StringBuilder = StringBuilder(baseUrlWithApiName + if(params.isEmpty()) "" else "?")
         for(param in params) finalUrl.append(param.key + "=" + param.value + "&")
         if(finalUrl[finalUrl.length - 1] == '?') {
@@ -48,7 +48,7 @@ open class VolleyImpl @Inject constructor(private val myApp: MyApp): ApiPadhai {
         val url = getUrlWithParams(ApiPadhai.BASE_URL + apiName, params)
         val jsonObjectRequest = JsonObjectRequest(Method.GET, url, null,
             { response ->
-//                    logApiResponse(apiName, response)
+                logApiResponse(apiName, response)
                 if(response != null) {
                     success(response)
                 } else {
@@ -72,7 +72,12 @@ open class VolleyImpl @Inject constructor(private val myApp: MyApp): ApiPadhai {
         val jsonObject = JSONObject(params)
         val jsonObjectRequest = JsonObjectRequest(Method.POST, url, jsonObject,
             { response ->
-                success(response)
+                logApiResponse(apiName, response)
+                if(response != null) {
+                    success(response)
+                } else {
+                    error("Something went wrong, Please try again.")
+                }
             },
             { err ->
                 err.message?.let { it -> error(it) }
