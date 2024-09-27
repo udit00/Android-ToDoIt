@@ -15,13 +15,14 @@ class HomeRepository @Inject constructor(private val api: Api) {
     private val _error: MutableStateFlow<String?> = MutableStateFlow(null)
     val errorFlow get() = _error.asStateFlow().drop(1)
 
-    private val _todos: MutableStateFlow<JSONObject?> = MutableStateFlow(null)
-    val todos get() = _todos.asStateFlow().drop(1)
+//    private val _todos: MutableStateFlow<JSONObject?> = MutableStateFlow(null)
+//    val todos get() = _todos.asStateFlow().drop(1)
 
-    suspend fun getTodos(params: Map<String, String>) {
+    suspend fun getTodos(params: Map<String, String>, response: (jsonObject: JSONObject) -> Unit) {
         api.get("getTodos", params, { jsonObject ->
             try {
-                _todos.value = jsonObject
+//                _todos.value = jsonObject
+                response(jsonObject)
             } catch (ex: Exception) {
                 _error.value = ex.message
             }
