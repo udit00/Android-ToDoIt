@@ -3,7 +3,6 @@ package com.udit.todoit.hilt
 import android.content.Context
 import com.udit.todoit.api.Api
 import com.udit.todoit.entry_point.application.MyApp
-import com.udit.todoit.ui.login.model.LoginRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

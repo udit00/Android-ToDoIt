@@ -15,7 +15,7 @@ import androidx.navigation.NavController
 import com.udit.todoit.ui.home.data.Todo
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
 

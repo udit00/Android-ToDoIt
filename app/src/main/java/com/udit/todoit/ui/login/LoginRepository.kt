@@ -1,39 +1,28 @@
-package com.udit.todoit.ui.login.model
+package com.udit.todoit.ui.login
 
-import com.android.volley.toolbox.Volley
 import com.udit.todoit.api.Api
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import org.json.JSONObject
 import javax.inject.Inject
 
 
 class LoginRepository @Inject constructor(private val api: Api) {
 
+    private val _error: MutableStateFlow<String?> = MutableStateFlow(null)
+    val errorFlow get() = _error.asStateFlow().drop(1)
 
-
-    suspend fun userLogin(params: Map<String, String>) {
-        api.post("userLogin", params, {
-
-        }, {
-
+    suspend fun userLogin(params: Map<String, String>, response: (jsonObject: JSONObject) -> Unit) {
+        api.post("userLogin", params, { jsonObject: JSONObject ->
+            try {
+                response(jsonObject)
+            } catch (ex: Exception) {
+                _error.value = ex.message
+            }
+        }, { errMsg: String ->
+            _error.value = errMsg
         })
     }
 
-//    fun userLogin(params: Map<String, String>) {
-//        api.get(params)
-//    }
-//    fun userLogin() {
-//        val queue = Volley.newRequestQueue(this)
-//        val url = "https://www.google.com"
-//
-//// Request a string response from the provided URL.
-//        val stringRequest = StringRequest(Request.Method.GET, url,
-//            Response.Listener<String> { response ->
-//                // Display the first 500 characters of the response string.
-//                textView.text = "Response is: ${response.substring(0, 500)}"
-//            },
-//            Response.ErrorListener { textView.text = "That didn't work!" })
-//
-//// Add the request to the RequestQueue.
-//        queue.add(stringRequest)
-//    }
 }
