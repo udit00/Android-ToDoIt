@@ -2,7 +2,7 @@ package com.udit.todoit.ui.login.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.udit.todoit.ui.login.model.LoginRepository
+import com.udit.todoit.ui.login.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
