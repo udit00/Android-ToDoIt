@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.login
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -23,23 +24,27 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
 
     fun loginUser(mobile: String, password: String) {
         val params: MutableMap<String, String> = mapOf(
-            "prm_mobileno" to mobile,
-            "prm_password" to password,
-            "prm_useripaddress" to "",
-            "prm_platform" to "ANDROID"
+            "userNameMobileNo" to mobile,
+            "passWord" to password,
+            "loginPlatform" to "ANDROID",
+            "loginIpAddress" to ""
         ).toMutableMap()
         viewModelScope.launch (Dispatchers.IO) {
             loginRepository.userLogin(params) { jsonObject: JSONObject ->
                 try {
-                    val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject)
+                    val apiResponse: ApiPadhaiResponse<LoginModel>? = handleApiResponse<LoginModel>(jsonObject, LoginModel::class.java)
 
                     if(apiResponse != null) {
-                        val gson = Gson()
-                        val typeToken = object: TypeToken<Array<LoginModel>>(){}.type
-                        val loginModelList = gson.fromJson<Array<LoginModel>>(apiResponse.data[0].toString(), typeToken)
-                        if (loginModelList.isNotEmpty()) {
-                            _loginMutableFlow.value = loginModelList[0]
-                        }
+//                        val loginModel = Gson().fromJson(apiResponse.Response, LoginModel::class.java)
+                        val loginModel = apiResponse.Response
+                        Log.d("LoginViewModel", loginModel.toString())
+
+//                        val gson = Gson()
+//                        val typeToken = object: TypeToken<Array<LoginModel>>(){}.type
+//                        val loginModelList = gson.fromJson<Array<LoginModel>>(apiResponse.data[0].toString(), typeToken)
+//                        if (loginModelList.isNotEmpty()) {
+//                            _loginMutableFlow.value = loginModelList[0]
+//                        }
                     }
                 } catch (ex: Exception) {
                     _errorMutableFlow.value = ex.message

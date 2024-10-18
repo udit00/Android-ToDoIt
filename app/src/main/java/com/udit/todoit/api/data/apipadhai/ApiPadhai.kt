@@ -10,7 +10,8 @@ interface ApiPadhai {
 
     companion object {
 //        const val BASE_URL: String = "https://www.apipadhai.com/todo/"
-        const val BASE_URL: String = "http://157.173.218.215:5000/todo/"
+//        const val BASE_URL: String = "http://157.173.218.215:5000/todo/"
+        const val BASE_URL: String = "http://srv554627.hstgr.cloud:10000/API/todo/"
 
     }
 }

@@ -24,7 +24,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         ) {
             Text(text = "Login Screen")
             Button(onClick = {
-                viewModel.loginUser("7011490531", "456789")
+                viewModel.loginUser("uditnair90", "123456")
             }) {
                 Text(text = "Login")
             }

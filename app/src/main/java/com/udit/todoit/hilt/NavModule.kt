@@ -14,6 +14,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NavModule {
+//    @Provides
+//    @Singleton
+//    fun providesNavController(navigationProvider: NavigationProvider): NavController {
+//        return navigationProvider.navController
+//    }
 
     @Provides
     @Singleton
@@ -21,9 +26,4 @@ object NavModule {
         return NavigationProvider(context)
     }
 
-    @Provides
-    @Singleton
-    fun providesNavController(navigationProvider: NavigationProvider): NavController {
-        return navigationProvider.navController
-    }
 }

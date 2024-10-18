@@ -36,15 +36,15 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         viewModelScope.launch {
             homeRepository.getTodos(params) { jsonObject: JSONObject ->
                 try {
-                    val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject)
+                    val apiResponse: ApiPadhaiResponse<Todo>? = handleApiResponse(jsonObject, Todo::class.java)
 
                     if(apiResponse != null) {
                         val gson = Gson()
                         val typeToken = object: TypeToken<Array<Todo>>(){}.type
-                        val todosList = gson.fromJson<Array<Todo>>(apiResponse.data[0].toString(), typeToken)
-                        if (todosList.isNotEmpty()) {
-                            _todos.value = todosList
-                        }
+//                        val todosList = gson.fromJson<Array<Todo>>(apiResponse.data[0].toString(), typeToken)
+//                        if (todosList.isNotEmpty()) {
+//                            _todos.value = todosList
+//                        }
                     }
                 } catch (ex: Exception) {
                     _errorMutableFlow.value = ex.message

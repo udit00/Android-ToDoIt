@@ -1,15 +1,14 @@
 package com.udit.todoit.ui.login.model
 
 data class LoginModel(
-    val createdon: String,
-    val displaypicture: String,
-    val email_id: String,
-    val fbtoken: Any,
-    val ispremium: String,
-    val message: String,
-    val mobile_no: String,
-    val name: String,
-    val pass: String,
-    val status: Int,
-    val userid: Int
+    val UserID: Int,
+    val Name: String,
+    val Password: String,
+    val DisplayPicture: String?, // Use nullable String for nullable fields
+    val CreatedOn: String,
+    val FirebaseToken: String?,
+    val EmailID: String?,
+    val MobileNo: String,
+    val IsActive: Boolean,
+    val IsPremium: Boolean
 )

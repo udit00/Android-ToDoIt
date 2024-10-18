@@ -21,15 +21,15 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity @Inject constructor() : ComponentActivity() {
 
-//    @Inject lateinit var navigationProvider: NavigationProvider
-    @Inject lateinit var navController: NavHostController
+    @Inject lateinit var navigationProvider: NavigationProvider
+//    @Inject lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ToDoItTheme {
-                MainScreen(navController)
+                MainScreen(navigationProvider.navController)
             }
         }
     }
