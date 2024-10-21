@@ -18,20 +18,14 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
     protected val _errorMutableFlow = MutableStateFlow<String?>(null)
     val errorFlow get() = _errorMutableFlow.asStateFlow()
 
-    fun<T> handleApiResponse(jsonObject: JSONObject?, responseType: Class<T>): ApiPadhaiResponse<T>? {
+    fun handleApiResponse(jsonObject: JSONObject?): ApiPadhaiResponse? {
         if(jsonObject != null) {
             try {
                 val gson = Gson()
-//                val apiRawRes: ApiPadhaiResponse<T> = Gson().fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), ApiPadhaiResponse::class.java)
-//                val classT: Class<T> = T
-                val type = TypeToken.getParameterized(ApiPadhaiResponse::class.java, responseType).type
-                val apiRawRes = gson.fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), type)
+//                val type = TypeToken.getParameterized(ApiPadhaiResponse::class.java, responseType).type
+//                val apiRawRes = gson.fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), responseType.type)
+                val apiRawRes = gson.fromJson(jsonObject.toString(), ApiPadhaiResponse::class.java)
                 return apiRawRes
-//                val apiRawRes = jsonObject as ApiPadhaiResponse
-//                val typeToken = object: TypeToken<ApiPadhaiResponse>() {}.type
-//                val apiRawRes = Gson().fromJson<ApiPadhaiResponse>(jsonObject, typeToken)
-//                if(apiRawRes.Success) {
-//                }
             } catch (ex: Exception) {
                 _errorMutableFlow.value = ex.message
             }
@@ -40,6 +34,22 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
         }
         return null
     }
+
+//    fun<T> handleApiResponse(jsonObject: JSONObject?, responseType: Class<T>): ApiPadhaiResponse<T>? {
+//        if(jsonObject != null) {
+//            try {
+//                val gson = Gson()
+//                val type = TypeToken.getParameterized(ApiPadhaiResponse::class.java, responseType).type
+//                val apiRawRes = gson.fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), type)
+//                return apiRawRes
+//            } catch (ex: Exception) {
+//                _errorMutableFlow.value = ex.message
+//            }
+//        } else {
+//            _errorMutableFlow.value = "Could not parse response."
+//        }
+//        return null
+//    }
 
     fun logger(msg: String) {
         Log.d("ViewModel", msg)

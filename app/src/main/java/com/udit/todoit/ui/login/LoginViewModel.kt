@@ -3,6 +3,7 @@ package com.udit.todoit.ui.login
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.base.BaseViewModel
@@ -32,11 +33,13 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
         viewModelScope.launch (Dispatchers.IO) {
             loginRepository.userLogin(params) { jsonObject: JSONObject ->
                 try {
-                    val apiResponse: ApiPadhaiResponse<LoginModel>? = handleApiResponse<LoginModel>(jsonObject, LoginModel::class.java)
+//                    val typeToken = object: TypeToken<JsonObject>() {}
+//                    val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject, typeToken)
+                    val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject)
 
                     if(apiResponse != null) {
-//                        val loginModel = Gson().fromJson(apiResponse.Response, LoginModel::class.java)
-                        val loginModel = apiResponse.Response
+                        val loginModel = Gson().fromJson(apiResponse.Response, LoginModel::class.java)
+//                        val loginModel = apiResponse.Response
                         Log.d("LoginViewModel", loginModel.toString())
 
 //                        val gson = Gson()
