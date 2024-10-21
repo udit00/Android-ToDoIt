@@ -18,38 +18,16 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
     protected val _errorMutableFlow = MutableStateFlow<String?>(null)
     val errorFlow get() = _errorMutableFlow.asStateFlow()
 
-    fun handleApiResponse(jsonObject: JSONObject?): ApiPadhaiResponse? {
-        if(jsonObject != null) {
-            try {
-                val gson = Gson()
-//                val type = TypeToken.getParameterized(ApiPadhaiResponse::class.java, responseType).type
-//                val apiRawRes = gson.fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), responseType.type)
-                val apiRawRes = gson.fromJson(jsonObject.toString(), ApiPadhaiResponse::class.java)
-                return apiRawRes
-            } catch (ex: Exception) {
-                _errorMutableFlow.value = ex.message
-            }
-        } else {
-            _errorMutableFlow.value = "Could not parse response."
+    fun handleApiResponse(jsonObject: JSONObject): ApiPadhaiResponse? {
+        var apiPadhaiResponse: ApiPadhaiResponse? = null
+        try {
+            val gson = Gson()
+            apiPadhaiResponse = gson.fromJson(jsonObject.toString(), ApiPadhaiResponse::class.java)
+        } catch (ex: Exception) {
+            _errorMutableFlow.value = ex.message
         }
-        return null
+        return apiPadhaiResponse
     }
-
-//    fun<T> handleApiResponse(jsonObject: JSONObject?, responseType: Class<T>): ApiPadhaiResponse<T>? {
-//        if(jsonObject != null) {
-//            try {
-//                val gson = Gson()
-//                val type = TypeToken.getParameterized(ApiPadhaiResponse::class.java, responseType).type
-//                val apiRawRes = gson.fromJson<ApiPadhaiResponse<T>>(jsonObject.toString(), type)
-//                return apiRawRes
-//            } catch (ex: Exception) {
-//                _errorMutableFlow.value = ex.message
-//            }
-//        } else {
-//            _errorMutableFlow.value = "Could not parse response."
-//        }
-//        return null
-//    }
 
     fun logger(msg: String) {
         Log.d("ViewModel", msg)

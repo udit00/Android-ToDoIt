@@ -3,8 +3,6 @@ package com.udit.todoit.ui.login
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.ui.login.model.LoginModel
@@ -23,9 +21,16 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
     private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
     val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
 
-    fun loginUser(mobile: String, password: String) {
+    fun loginUser(userNameMobileNo: String?, password: String?) {
+        if(userNameMobileNo.isNullOrBlank()) {
+            _errorMutableFlow.value = "UserName cannot be empty."
+            return
+        } else if(password.isNullOrBlank()) {
+            _errorMutableFlow.value = "Password cannot be empty."
+            return
+        }
         val params: MutableMap<String, String> = mapOf(
-            "userNameMobileNo" to mobile,
+            "userNameMobileNo" to userNameMobileNo,
             "passWord" to password,
             "loginPlatform" to "ANDROID",
             "loginIpAddress" to ""
@@ -33,21 +38,11 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
         viewModelScope.launch (Dispatchers.IO) {
             loginRepository.userLogin(params) { jsonObject: JSONObject ->
                 try {
-//                    val typeToken = object: TypeToken<JsonObject>() {}
-//                    val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject, typeToken)
                     val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject)
-
                     if(apiResponse != null) {
                         val loginModel = Gson().fromJson(apiResponse.Response, LoginModel::class.java)
-//                        val loginModel = apiResponse.Response
                         Log.d("LoginViewModel", loginModel.toString())
-
-//                        val gson = Gson()
-//                        val typeToken = object: TypeToken<Array<LoginModel>>(){}.type
-//                        val loginModelList = gson.fromJson<Array<LoginModel>>(apiResponse.data[0].toString(), typeToken)
-//                        if (loginModelList.isNotEmpty()) {
-//                            _loginMutableFlow.value = loginModelList[0]
-//                        }
+                        _loginMutableFlow.value = loginModel
                     }
                 } catch (ex: Exception) {
                     _errorMutableFlow.value = ex.message

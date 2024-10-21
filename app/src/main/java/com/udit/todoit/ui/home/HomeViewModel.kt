@@ -38,10 +38,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         viewModelScope.launch {
             homeRepository.getTodos(params) { jsonObject: JSONObject ->
                 try {
-//                    val typeToken = object: TypeToken<JsonObject>() {}
-//                    val apiResponse = handleApiResponse(jsonObject, typeToken)
                     val apiResponse = handleApiResponse(jsonObject)
-//
                     if(apiResponse != null) {
                         val typeToken = object: TypeToken<ArrayList<Todo>>(){}.type
                         val todoList = Gson().fromJson<ArrayList<Todo>>(apiResponse.Response, typeToken)
