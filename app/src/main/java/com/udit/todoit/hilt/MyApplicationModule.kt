@@ -3,6 +3,7 @@ package com.udit.todoit.hilt
 import android.content.Context
 import com.udit.todoit.api.Api
 import com.udit.todoit.entry_point.application.MyApp
+import com.udit.todoit.shared_preferences.StorageHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,6 +25,12 @@ object MyApplicationModule {
     @Singleton
     fun provideApiPadhaiApi(myApp: MyApp): Api {
         return Api(myApp)
+    }
+
+    @Provides
+    @Singleton
+    fun providesStorageHelper(myApp: MyApp): StorageHelper {
+        return StorageHelper(myApp)
     }
 
 }

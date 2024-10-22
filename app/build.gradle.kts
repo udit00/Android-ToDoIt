@@ -5,6 +5,7 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "2.0.20"
+//    id("com.google.devtools.ksp")
 }
 
 android {
@@ -74,6 +75,14 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.gson)
     kapt(libs.hilt.android.compiler)
+
+    val room_version = "2.6.1"
+
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt(libs.androidx.room.compiler)
 
 
     //

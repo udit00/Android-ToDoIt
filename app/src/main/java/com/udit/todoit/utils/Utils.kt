@@ -1,5 +1,8 @@
 package com.udit.todoit.utils
 
+import android.content.Context
+import android.widget.Toast
+
 object Utils {
 
     private fun getIPv4(): String? {
@@ -17,4 +20,9 @@ object Utils {
         else if(!ipv6.isNullOrBlank()) ipv6
         else "NA"
     }
+
+    fun showToast(context: Context, msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+    }
+
 }
