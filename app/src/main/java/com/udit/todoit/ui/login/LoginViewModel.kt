@@ -1,11 +1,13 @@
 package com.udit.todoit.ui.login
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.ui.login.model.LoginModel
+import com.udit.todoit.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,10 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
     private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
     val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
 
+    val userNameMobileNo = mutableStateOf("")
+    val passWord = mutableStateOf("")
+
+
     fun loginUser(userNameMobileNo: String?, password: String?) {
         if(userNameMobileNo.isNullOrBlank()) {
             _errorMutableFlow.value = "UserName cannot be empty."
@@ -33,7 +39,7 @@ class LoginViewModel @Inject constructor(private val loginRepository: LoginRepos
             "userNameMobileNo" to userNameMobileNo,
             "passWord" to password,
             "loginPlatform" to "ANDROID",
-            "loginIpAddress" to ""
+            "loginIpAddress" to Utils.getIpAddress()
         ).toMutableMap()
         viewModelScope.launch (Dispatchers.IO) {
             loginRepository.userLogin(params) { jsonObject: JSONObject ->

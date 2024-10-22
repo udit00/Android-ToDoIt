@@ -42,7 +42,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
                     if(apiResponse != null) {
                         val typeToken = object: TypeToken<ArrayList<Todo>>(){}.type
                         val todoList = Gson().fromJson<ArrayList<Todo>>(apiResponse.Response, typeToken)
-                        Log.d("HOME VIEW MODEL", todoList.toString())
+                        Log.d(this@HomeViewModel.javaClass.simpleName, todoList.toString())
                     }
                 } catch (ex: Exception) {
                     _errorMutableFlow.value = ex.message

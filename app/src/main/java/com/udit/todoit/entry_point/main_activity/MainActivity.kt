@@ -39,7 +39,7 @@ class MainActivity @Inject constructor() : ComponentActivity() {
 fun MainScreen (
     navHostController: NavHostController
 ) {
-    NavHost(navController = navHostController, startDestination = Screen.HomePage) {
+    NavHost(navController = navHostController, startDestination = Screen.LoginPage) {
         composable<Screen.LoginPage> {
             LoginScreen()
         }
