@@ -1,6 +1,7 @@
 package com.udit.todoit.ui.home
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -22,7 +23,9 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     Scaffold(
         modifier = Modifier
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Column(
+            modifier = Modifier.padding(innerPadding)
+        ) {
             Text(text = "HomeScreen")
             Button(onClick = {
                 viewModel.getTodos()

@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -32,9 +33,20 @@ class LoginViewModel @Inject constructor(
     private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
     val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
 
+    private val _isLoadingMutableFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isLoading get() = _isLoadingMutableFlow.asStateFlow()
+
     val userNameMobileNo = mutableStateOf("7011490531")
     val passWord = mutableStateOf("123456")
     val passwordVisibility = mutableStateOf(false)
+
+    init {
+        viewModelScope.launch {
+            loginRepository.errorFlow.collectLatest { errMsg ->
+                _errorMutableFlow.value = errMsg
+            }
+        }
+    }
 
     fun localLogger(str: String?): Unit {
         str?.let { s ->
@@ -42,8 +54,13 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun toggleLoading() {
+        _isLoadingMutableFlow.value = !_isLoadingMutableFlow.value
+    }
+
 
     fun loginUser() {
+        _isLoadingMutableFlow.value = true
         val user: String = this.userNameMobileNo.value
         val pass = this.passWord.value
         if(user.isBlank()) {

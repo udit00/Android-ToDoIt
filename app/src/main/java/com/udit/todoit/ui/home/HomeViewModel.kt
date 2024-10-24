@@ -23,11 +23,12 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     private val _todos: MutableStateFlow<Array<Todo>> = MutableStateFlow(arrayOf())
     val todos get() = _todos.asStateFlow()
 
-//    init {
+    init {
 //        viewModelScope.launch {
 //            setObservers()
 //        }
-//    }
+        getTodos()
+    }
 
     fun getTodos(searchValue: String? = "") {
         val searchedString: String = if(searchValue.isNullOrBlank()) "" else searchValue

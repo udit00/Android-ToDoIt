@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -61,6 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.udit.todoit.R
 import com.udit.todoit.ui.common_composables.GradientButton
+import com.udit.todoit.ui.common_composables.GradientButtonWithLoader
 import com.udit.todoit.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -70,6 +72,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val isLoading = viewModel.isLoading.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = "") {
         scope.launch(Dispatchers.Main) {
@@ -190,15 +193,28 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 }
             )
             Spacer(modifier = Modifier.height(40.dp))
-            GradientButton(
+//            GradientButton(
+//                text = "Login",
+//                gradient = buttonGradient,
+//                modifier = Modifier
+//                    .wrapContentWidth()
+//                    .padding(70.dp, 12.dp),
+//                onClick = {
+//                    viewModel.loginUser()
+//                })
+
+            GradientButtonWithLoader(
                 text = "Login",
                 gradient = buttonGradient,
+                isLoading = isLoading.value,
                 modifier = Modifier
                     .wrapContentWidth()
                     .padding(70.dp, 12.dp),
                 onClick = {
-                    viewModel.loginUser()
+//                    viewModel.loginUser()
+                    viewModel.toggleLoading()
                 })
+
 
 //            GradientButton(
 //                text = "Test",
