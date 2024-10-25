@@ -211,8 +211,8 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                     .wrapContentWidth()
                     .padding(70.dp, 19.dp),
                 onClick = {
-//                    viewModel.loginUser()
-                    viewModel.toggleLoading()
+                    viewModel.loginUser()
+//                    viewModel.toggleLoading()
                 })
 
 

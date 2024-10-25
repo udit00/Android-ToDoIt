@@ -29,6 +29,14 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
         return apiPadhaiResponse
     }
 
+    fun notifyUserAboutError(errMsg: String?) {
+        if(errMsg != null) {
+            _errorMutableFlow.value = errMsg
+        } else {
+            _errorMutableFlow.value = "Something went wrong."
+        }
+    }
+
     fun logger(msg: String) {
         Log.d("ViewModel", msg)
     }

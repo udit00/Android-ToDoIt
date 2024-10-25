@@ -43,7 +43,8 @@ class LoginViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             loginRepository.errorFlow.collectLatest { errMsg ->
-                _errorMutableFlow.value = errMsg
+                notifyUserAboutError(errMsg)
+                hideLoading()
             }
         }
     }
@@ -58,16 +59,28 @@ class LoginViewModel @Inject constructor(
         _isLoadingMutableFlow.value = !_isLoadingMutableFlow.value
     }
 
+    fun showLoading() {
+        _isLoadingMutableFlow.value = true
+    }
+
+    fun hideLoading() {
+        _isLoadingMutableFlow.value = false
+    }
+
+
+
 
     fun loginUser() {
-        _isLoadingMutableFlow.value = true
+        showLoading()
         val user: String = this.userNameMobileNo.value
         val pass = this.passWord.value
         if(user.isBlank()) {
-            _errorMutableFlow.value = "UserName cannot be empty."
+            notifyUserAboutError("UserName cannot be empty.")
+            hideLoading()
             return
         } else if(pass.isBlank()) {
-            _errorMutableFlow.value = "Password cannot be empty."
+            notifyUserAboutError("Password cannot be empty.")
+            hideLoading()
             return
         }
         val params: MutableMap<String, String> = mapOf(
@@ -79,6 +92,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch (Dispatchers.IO) {
             loginRepository.userLogin(params) { jsonObject: JSONObject ->
                 try {
+                    hideLoading()
                     val apiResponse: ApiPadhaiResponse? = handleApiResponse(jsonObject)
                     if(apiResponse != null) {
                         val loginModel = Gson().fromJson(apiResponse.Response, LoginModel::class.java)
@@ -86,7 +100,12 @@ class LoginViewModel @Inject constructor(
                         navigateToHomePage()
                     }
                 } catch (ex: Exception) {
-                    _errorMutableFlow.value = ex.message
+                    hideLoading()
+                    if(ex.message != null) {
+                        notifyUserAboutError(ex.message!!)
+                    } else {
+                        notifyUserAboutError("Something went wrong.")
+                    }
                 }
             }
         }
