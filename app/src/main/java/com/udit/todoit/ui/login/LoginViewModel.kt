@@ -3,7 +3,6 @@ package com.udit.todoit.ui.login
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.base.BaseViewModel
@@ -17,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
+//import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
@@ -30,8 +29,8 @@ class LoginViewModel @Inject constructor(
 ): BaseViewModel() {
 
 
-    private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
-    val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
+//    private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
+//    val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
 
     private val _isLoadingMutableFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isLoading get() = _isLoadingMutableFlow.asStateFlow()
@@ -47,6 +46,9 @@ class LoginViewModel @Inject constructor(
                 hideLoading()
             }
         }
+        if(ifUserAlreadyLoggedIn()) {
+            navigateToHomePage()
+        }
     }
 
     fun localLogger(str: String?): Unit {
@@ -59,16 +61,26 @@ class LoginViewModel @Inject constructor(
         _isLoadingMutableFlow.value = !_isLoadingMutableFlow.value
     }
 
-    fun showLoading() {
+    private fun showLoading() {
         _isLoadingMutableFlow.value = true
     }
 
-    fun hideLoading() {
+    private fun hideLoading() {
         _isLoadingMutableFlow.value = false
     }
 
-
-
+    private fun ifUserAlreadyLoggedIn(): Boolean {
+        val loginData = storageHelper.getLoginData()
+        if(loginData != null) {
+            Log.d("", loginData.toString())
+            if(loginData.UserID > 0
+                && loginData.MobileNo.isNotBlank()
+                && loginData.Password.isNotBlank()) {
+                return true
+            }
+        }
+        return false
+    }
 
     fun loginUser() {
         showLoading()
