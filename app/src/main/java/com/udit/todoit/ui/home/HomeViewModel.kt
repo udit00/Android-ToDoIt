@@ -3,16 +3,12 @@ package com.udit.todoit.ui.home
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
-import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.base.BaseViewModel
-import com.udit.todoit.ui.home.data.Todo
+import com.udit.todoit.room.entity.Todo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
@@ -20,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository): BaseViewModel() {
 
-    private val _todos: MutableStateFlow<Array<Todo>> = MutableStateFlow(arrayOf())
+    private val _todos: MutableStateFlow<ArrayList<Todo>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
 
     init {
@@ -43,6 +39,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
                     if(apiResponse != null) {
                         val typeToken = object: TypeToken<ArrayList<Todo>>(){}.type
                         val todoList = Gson().fromJson<ArrayList<Todo>>(apiResponse.Response, typeToken)
+                        _todos.value = todoList
                         Log.d(this@HomeViewModel.javaClass.simpleName, todoList.toString())
                     }
                 } catch (ex: Exception) {

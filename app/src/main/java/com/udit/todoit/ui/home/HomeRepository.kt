@@ -30,4 +30,8 @@ class HomeRepository @Inject constructor(private val api: Api) {
             _error.value = errorMessage
         })
     }
+
+    suspend fun getTodosFromRoomDb() {
+
+    }
 }
