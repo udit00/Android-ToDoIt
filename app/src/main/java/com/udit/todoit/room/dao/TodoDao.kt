@@ -19,7 +19,11 @@ interface TodoDao {
     @Query("SELECT * FROM todo")
     fun getAllTodo(): Flow<List<Todo>>
 
-//    @Query("Select tt.typename, t.* from todo t inner join todotype tt on tt.typeid where todoid = ?")
+//    @Query("Select tt.typename, t.* from todo t inner join todotype tt on tt.typeid where todoid = :todoId")
 //    fun getTodo(todoId: Todo): Flow<Todo>
+//
+//    @Query("Select tt.typename, t.* from todo t inner join todotype tt on tt.typeid where t.todoTypeID = :todoTypeId")
+//    fun getAllTodosFilterByType(todoTypeId: Int): Flow<List<Todo>>
+
 
 }

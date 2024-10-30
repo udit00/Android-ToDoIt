@@ -18,12 +18,14 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository, private val todoDb: TodoDatabase): BaseViewModel() {
+class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository): BaseViewModel() {
 
     private val _todos: MutableStateFlow<ArrayList<Todo>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
 
     init {
+//        insertTodoType("Home")
+        getTodosFromRoomDB()
 //        viewModelScope.launch {
 //            setObservers()
 //        }
@@ -61,6 +63,35 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
                     _errorMutableFlow.value = ex.message
                 }
             }
+        }
+    }
+
+    fun getTodosFromRoomDB(searchValue: String? = "") {
+        viewModelScope.launch {
+            homeRepository.getTodosFromRoomDb { list ->
+                _todos.value = list
+            }
+        }
+    }
+
+    fun insertTodo() {
+        val todo: Todo = Todo(
+            title = "Grocery",
+            description = "Get the Tomato",
+            todoTypeID = 1,
+            target = LocalDateTime.now().toString(),
+            createdOn = LocalDateTime.now().toString(),
+            createId = 1
+        )
+        viewModelScope.launch {
+            homeRepository.upsertTodo(todo)
+        }
+    }
+
+    fun insertTodoType(typeName: String) {
+        val todoType = TodoType(typename = typeName)
+        viewModelScope.launch {
+            homeRepository.upsertTodoType(todoType = todoType)
         }
     }
 }

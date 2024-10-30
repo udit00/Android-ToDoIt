@@ -3,14 +3,18 @@ package com.udit.todoit.ui.home
 import com.google.gson.Gson
 import com.udit.todoit.api.Api
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
+import com.udit.todoit.room.TodoDatabase
+import com.udit.todoit.room.entity.Todo
+import com.udit.todoit.room.entity.TodoType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import org.json.JSONObject
 import javax.inject.Inject
 
 
-class HomeRepository @Inject constructor(private val api: Api) {
+class HomeRepository @Inject constructor(private val api: Api, private val roomDB: TodoDatabase) {
 
     private val _error: MutableStateFlow<String?> = MutableStateFlow(null)
     val errorFlow get() = _error.asStateFlow().drop(1)
@@ -31,7 +35,18 @@ class HomeRepository @Inject constructor(private val api: Api) {
         })
     }
 
-    suspend fun getTodosFromRoomDb() {
+    suspend fun getTodosFromRoomDb(response: (listOfTodos: ArrayList<Todo>) -> Unit) {
+        roomDB.todoDao.getAllTodo().collectLatest {
+            var l: ArrayList<Todo> = ArrayList()
+            response(it.toCollection(l))
+        }
+    }
 
+    suspend fun upsertTodo(todo: Todo) {
+        roomDB.todoDao.upsertTodo(todo)
+    }
+
+    suspend fun upsertTodoType(todoType: TodoType) {
+        roomDB.todoTypeDao.upsertTodoType(todoType)
     }
 }
