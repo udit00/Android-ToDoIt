@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TodoDao {
+
     @Upsert
     suspend fun upsertTodo(todo: Todo)
 
