@@ -42,6 +42,12 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
         }
     }
 
+    suspend fun getTodoTypesFromRoomDb(response: (listOfTodoTypes: List<TodoType>) -> Unit) {
+        roomDB.todoTypeDao.getTodoTypes().collectLatest {
+            response(it)
+        }
+    }
+
     suspend fun upsertTodo(todo: Todo) {
         roomDB.todoDao.upsertTodo(todo)
     }
