@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.home
 
+import android.graphics.Color
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -9,6 +10,7 @@ import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
+import com.udit.todoit.ui.add_todo_type.AddTodoType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,9 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
 
     private val _todoTypes: MutableStateFlow<List<TodoType>> = MutableStateFlow(arrayListOf())
     val todoTypes get() = _todoTypes.asStateFlow()
+
+    private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
 
     init {
 //        insertTodoType("Home")
@@ -48,6 +53,14 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
 //        viewModelScope.launch {
 //            todoDb.todoDao.upsertTodo(todo)
 //        }
+    }
+
+    fun showAddTodoTypeAlert() {
+        _showAddTodoTypeAlert.value = true
+    }
+
+    fun hideAddTodoTypeAlert() {
+        _showAddTodoTypeAlert.value = false
     }
 
     fun getTodos(searchValue: String? = "") {
@@ -85,7 +98,11 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     fun getTodoTypesFromRoomDb() {
         viewModelScope.launch {
             homeRepository.getTodoTypesFromRoomDb {
-                _todoTypes.value = it
+//                _todoTypes.value = it
+                val types: MutableList<TodoType> = it.toMutableList()
+                //
+                _todoTypes.value = types
+//                types.add()
             }
         }
     }
@@ -108,10 +125,15 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         }
     }
 
-    fun insertTodoType(typeName: String) {
-        val todoType = TodoType(typename = typeName)
+    fun insertTodoType(typeName: String, color: Color) {
+        val todoType = TodoType(typename = typeName, color = color.toString())
         viewModelScope.launch {
             homeRepository.upsertTodoType(todoType = todoType)
         }
     }
+
+//    fun openAddTodoTypeAlert() {
+////        val state by remember
+//        AddTodoType()
+//    }
 }

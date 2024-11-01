@@ -10,5 +10,6 @@ data class TodoType(
     val typename: String,
     @SerializedName("type_id")
     @PrimaryKey(autoGenerate = true)
-    val typeId: Int = 0
+    val typeId: Int = 0,
+    val color: String
 )
