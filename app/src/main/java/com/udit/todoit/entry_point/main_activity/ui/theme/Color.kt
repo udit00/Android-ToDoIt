@@ -19,6 +19,10 @@ val light_btn = Color(android.graphics.Color.parseColor("#E9F0F4"))
 val light_bg = Color(android.graphics.Color.parseColor("#F6F8F9"))
 val clear_light = Color(0xFFF1C8D1)
 
+object AddTodoTypeColors {
+    val floatingActionButton = Color(0xff49634b)
+}
+
 sealed class ThemeColors(
     val background: Color,
     val surface: Color,
