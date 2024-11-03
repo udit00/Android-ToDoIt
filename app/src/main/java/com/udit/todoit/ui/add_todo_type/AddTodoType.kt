@@ -1,5 +1,7 @@
 package com.udit.todoit.ui.add_todo_type
 
+import android.graphics.drawable.shapes.OvalShape
+import android.view.RoundedCorner
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
@@ -41,6 +44,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -93,7 +98,7 @@ fun AddTodoType() {
 //            .fillMaxSize()
         ,
         onDismissRequest = {
-
+            println("a")
         },
         content = {
 
@@ -117,8 +122,32 @@ fun AddTodoType() {
                     verticalArrangement = Arrangement.SpaceEvenly
 //                    verticalArrangement = Arrangement.Center
                 ) {
+                    Row(
+                        modifier = Modifier
+//                            .background(Color.Red)
+                            .fillMaxWidth()
+                            .padding(end = 20.dp)
+                        ,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .clip(ShapeDefaults.Large)
+                                .background(AddTodoTypeColors.closeAlertButton),
+                            onClick = {
+
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = ""
+                            )
+                        }
+                    }
 
                     OutlinedTextField(
+//                        modifier = Modifier,
+//                            .background(Color.Blue),
                         value = todoName,
                         onValueChange = {
                             todoName = it
@@ -223,28 +252,24 @@ fun AddTodoType() {
                             onClick = {
 
                             },
-                            containerColor = cardColor,
-//                            containerColor = AddTodoTypeColors.floatingActionButton,
+//                            containerColor = cardColor,
+                            containerColor = AddTodoTypeColors.floatingActionButton,
 
                         ) {
                             Text(
                                 text = "Add",
                                 modifier = Modifier,
-                                color = when(cardColor.value) {
-                                    Color.Yellow.value -> {
-                                        Color.Black
-                                    } Color.Cyan.value -> {
-                                        Color.Black
-                                    } Color.Green.value -> {
-                                        Color.Black
-                                    } else -> {
-                                        Color.White
-                                    }
-                                }
-//                                color = if(cardColor.value == Color.Yellow.value) {
-//                                    Color.Black
-//                                } else {
-//                                    Color.White
+                                color =  cardColor
+//                                color = when(cardColor.value) {
+//                                    Color.Yellow.value -> {
+//                                        Color.Black
+//                                    } Color.Cyan.value -> {
+//                                        Color.Black
+//                                    } Color.Green.value -> {
+//                                        Color.Black
+//                                    } else -> {
+//                                        Color.White
+//                                    }
 //                                }
                             )
                         }
