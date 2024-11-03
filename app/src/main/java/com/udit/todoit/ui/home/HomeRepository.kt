@@ -52,7 +52,5 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
         roomDB.todoDao.upsertTodo(todo)
     }
 
-    suspend fun upsertTodoType(todoType: TodoType) {
-        roomDB.todoTypeDao.upsertTodoType(todoType)
-    }
+
 }

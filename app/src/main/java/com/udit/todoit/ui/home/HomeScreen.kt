@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.home
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -86,8 +87,10 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     LaunchedEffect(key1 = "") {
         scope.launch(Dispatchers.Main) {
             viewModel.errorFlow.collectLatest { errMsg: String? ->
+                Log.d("TOAST", errMsg?:"HIT")
                 errMsg?.let {
 //                    Utils.showToast(context, it)
+//                    Log.d("TOAST", errMsg)
                     Toast.makeText(context, it, Toast.LENGTH_LONG).show()
                 }
             }
@@ -118,7 +121,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if(showAddTodoTypeAlert.value) {
-            AddTodoType(viewModel)
+            AddTodoType(homeViewModel = viewModel)
         }
 
         Column(

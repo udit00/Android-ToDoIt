@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.time.LocalDateTime
@@ -25,6 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository) :
     BaseViewModel() {
+
+    @Inject lateinit var roomDB: TodoDatabase
 
     private val _todos: MutableStateFlow<ArrayList<Todo>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
@@ -35,31 +38,6 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
 
-    val enteredNameByUser: MutableStateFlow<String> = MutableStateFlow("")
-
-    private val _selectedColorByUser: MutableStateFlow<TodoTypeColorModel> = MutableStateFlow(
-        TodoTypeColorModel(
-            color = Color.Transparent,
-            isLight = true
-        )
-    )
-    val selectedColorByUser get() = _selectedColorByUser
-
-    val addTodoTypeColorList: MutableStateFlow<List<TodoTypeColorModel>> =  MutableStateFlow(listOf(
-        TodoTypeColorModel(color = Color.Red, isLight = false),
-        TodoTypeColorModel(color = Color.Cyan, isLight = true),
-        TodoTypeColorModel(color = Color.Green, isLight = false),
-        TodoTypeColorModel(color = Color.Blue, isLight = true),
-        TodoTypeColorModel(color = Color.Magenta, isLight =  false),
-        TodoTypeColorModel(color = Color.Yellow, isLight = false),
-    ))
-
-    init {
-        getTodoTypesFromRoomDb()
-        getTodosFromRoomDB()
-    }
-
-
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
     }
@@ -67,6 +45,22 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     fun hideAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = false
     }
+
+
+
+    init {
+        viewModelScope.launch {
+            homeRepository.errorFlow.collectLatest { errMsg ->
+                notifyUserAboutError(errMsg)
+//                hideLoading()
+            }
+        }
+        getTodoTypesFromRoomDb()
+        getTodosFromRoomDB()
+    }
+
+
+
 
     fun getTodos(searchValue: String? = "") {
         val searchedString: String = if (searchValue.isNullOrBlank()) "" else searchValue
@@ -130,22 +124,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         }
     }
 
-    fun insertTodoType() {
-        val typeName = enteredNameByUser.value
-        val color = selectedColorByUser.value.color
-        if(typeName.isBlank()) {
-            notifyUserAboutError("Type name cannot be empty.")
-            return
-        } else if(color.value == Color.Transparent.value) {
-            notifyUserAboutError("Select a color for your type - ${typeName}.")
-            return
-        }
-        val todoType = TodoType(typename = typeName, color = color.toString())
-        viewModelScope.launch {
-            homeRepository.upsertTodoType(todoType = todoType)
-            hideAddTodoTypeAlert()
-        }
-    }
+
 
 //    fun openAddTodoTypeAlert() {
 ////        val state by remember

@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.add_todo_type
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.tween
@@ -30,29 +31,51 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.udit.todoit.entry_point.main_activity.ui.theme.AddTodoTypeColors
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import com.udit.todoit.ui.home.HomeViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTodoType(homeViewModel: HomeViewModel) {
 
+    val viewModel = AddTodoTypeViewModel(AddTodoTypeRepository(homeViewModel.roomDB))
+    val scope = rememberCoroutineScope()
+
     val showAlertTodoType = homeViewModel.showAddTodoTypeAlert.collectAsStateWithLifecycle()
 
-    val enteredTypeByUser = homeViewModel.enteredNameByUser.collectAsStateWithLifecycle()
+    val enteredTypeByUser = viewModel.enteredNameByUser.collectAsStateWithLifecycle()
 
-    var selectedColorByUser = homeViewModel.selectedColorByUser.collectAsStateWithLifecycle()
-    val colorList = homeViewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
+    val selectedColorByUser = viewModel.selectedColorByUser.collectAsStateWithLifecycle()
+    val colorList = viewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
 
     if(!showAlertTodoType.value) return
+
+    LaunchedEffect("") {
+        viewModel.closeAlert.collectLatest { closeAlert ->
+            if (closeAlert) {
+                homeViewModel.hideAddTodoTypeAlert()
+            }
+        }
+    }
+
+
+
+
 
     BasicAlertDialog (
         modifier = Modifier
@@ -114,7 +137,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //                            .background(Color.Blue),
                         value = enteredTypeByUser.value,
                         onValueChange = { value: String ->
-                            homeViewModel.enteredNameByUser.value = value
+                            viewModel.enteredNameByUser.value = value
                         },
                         label = { Text(text = "Enter Todo Type") },
                         leadingIcon = {
@@ -159,7 +182,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                                     disabledContainerColor = Color.Transparent
                                 ),
                                 onClick = {
-                                    homeViewModel.selectedColorByUser.value = colorModel
+                                    viewModel.selectedColorByUser.value = colorModel
                                 }
                             ) {
 
@@ -214,7 +237,9 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //                        }
                         ExtendedFloatingActionButton(
                             onClick = {
-                                homeViewModel.insertTodoType()
+                                scope.launch {
+                                    viewModel.insertTodoType()
+                                }
                             },
 //                            containerColor = if(selectedColorByUser.color == Color.Transparent) {
 //                                Color.Black
@@ -279,4 +304,11 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //            securePolicy = SecureFlagPolicy.SecureOn
         )
     )
+
+    DisposableEffect(Unit) {
+        onDispose {
+            // This will be called when the composable using this ViewModel is removed
+            Log.d("MyComposable", "Composable is disposed and ViewModel is likely cleared")
+        }
+    }
 }
