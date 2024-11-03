@@ -1,94 +1,58 @@
 package com.udit.todoit.ui.add_todo_type
 
-import android.graphics.drawable.shapes.OvalShape
-import android.view.RoundedCorner
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.SecureFlagPolicy
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.udit.todoit.entry_point.main_activity.ui.theme.AddTodoTypeColors
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import com.udit.todoit.ui.home.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTodoType() {
+fun AddTodoType(homeViewModel: HomeViewModel) {
 
-    var todoName by remember {
-        mutableStateOf("")
-    }
+    val showAlertTodoType = homeViewModel.showAddTodoTypeAlert.collectAsStateWithLifecycle()
 
-    var cardColor by remember {
-        mutableStateOf(Color.Black)
-    }
+    val enteredTypeByUser = homeViewModel.enteredNameByUser.collectAsStateWithLifecycle()
 
-    val colorList by remember {
-        mutableStateOf(listOf(
-            Color.Red,
-            Color.Cyan,
-            Color.Green,
-            Color.Blue,
-            Color.Magenta,
-            Color.Yellow,
-        ))
-    }
+    var selectedColorByUser = homeViewModel.selectedColorByUser.collectAsStateWithLifecycle()
+    val colorList = homeViewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
 
+    if(!showAlertTodoType.value) return
 
     BasicAlertDialog (
         modifier = Modifier
@@ -98,7 +62,7 @@ fun AddTodoType() {
 //            .fillMaxSize()
         ,
         onDismissRequest = {
-            println("a")
+            homeViewModel.hideAddTodoTypeAlert()
         },
         content = {
 
@@ -108,7 +72,7 @@ fun AddTodoType() {
                 ,
                 border = BorderStroke(
                     width = 2.dp,
-                    color = cardColor
+                    color = selectedColorByUser.value.color
                 )
 //                    .height(200.dp)
             ) {
@@ -135,7 +99,7 @@ fun AddTodoType() {
                                 .clip(ShapeDefaults.Large)
                                 .background(AddTodoTypeColors.closeAlertButton),
                             onClick = {
-
+                                homeViewModel.hideAddTodoTypeAlert()
                             },
                         ) {
                             Icon(
@@ -148,9 +112,9 @@ fun AddTodoType() {
                     OutlinedTextField(
 //                        modifier = Modifier,
 //                            .background(Color.Blue),
-                        value = todoName,
-                        onValueChange = {
-                            todoName = it
+                        value = enteredTypeByUser.value,
+                        onValueChange = { value: String ->
+                            homeViewModel.enteredNameByUser.value = value
                         },
                         label = { Text(text = "Enter Todo Type") },
                         leadingIcon = {
@@ -171,8 +135,8 @@ fun AddTodoType() {
 //                        contentPadding = PaddingValues(5.dp)
                     ) {
                         itemsIndexed(
-                            colorList
-                        ) { index, color: Color ->
+                            items = colorList.value
+                        ) { _: Int, colorModel: TodoTypeColorModel ->
 
 //                            Box(
 //                                modifier = Modifier
@@ -189,13 +153,13 @@ fun AddTodoType() {
                                     .padding(10.dp)
                                 ,
                                 colors = ButtonColors(
-                                    contentColor = color,
-                                    containerColor = color,
+                                    contentColor = colorModel.color,
+                                    containerColor = colorModel.color,
                                     disabledContentColor = Color.Transparent,
                                     disabledContainerColor = Color.Transparent
                                 ),
                                 onClick = {
-                                    cardColor = color
+                                    homeViewModel.selectedColorByUser.value = colorModel
                                 }
                             ) {
 
@@ -250,17 +214,45 @@ fun AddTodoType() {
 //                        }
                         ExtendedFloatingActionButton(
                             onClick = {
-
+                                homeViewModel.insertTodoType()
                             },
-//                            containerColor = cardColor,
-                            containerColor = AddTodoTypeColors.floatingActionButton,
+//                            containerColor = if(selectedColorByUser.color == Color.Transparent) {
+//                                Color.Black
+//                            } else {
+//                                selectedColorByUser.color
+//                            },
+                            containerColor = animateColorAsState(
+                                targetValue = if(selectedColorByUser.value.color == Color.Transparent) {
+                                    Color.Black
+                                } else {
+                                    selectedColorByUser.value.color
+                                },
+                                animationSpec = tween(
+                                    durationMillis = 500,
+                                    delayMillis = 500,
+                                    easing = EaseIn
+                                )
+                            ).value
+//                            containerColor = AddTodoTypeColors.floatingActionButton,
 
                         ) {
                             Text(
                                 text = "Add",
                                 modifier = Modifier,
-                                color =  cardColor
-//                                color = when(cardColor.value) {
+//                                color =  selectedColorByUser
+                                color = animateColorAsState(
+                                    targetValue = if(selectedColorByUser.value.color == Color.Transparent || !selectedColorByUser.value.isLight) {
+                                        Color.White
+                                    } else {
+                                        Color.Black
+                                    },
+                                    animationSpec = tween(
+                                        durationMillis = 500,
+                                        delayMillis = 500,
+                                        easing = EaseIn
+                                    )
+                                ).value
+//                                color = when(selectedColorByUser.color.value) {
 //                                    Color.Yellow.value -> {
 //                                        Color.Black
 //                                    } Color.Cyan.value -> {

@@ -1,7 +1,8 @@
 package com.udit.todoit.ui.home
 
-import android.graphics.Color
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.Gson
@@ -11,6 +12,7 @@ import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,27 +35,30 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
 
+    val enteredNameByUser: MutableStateFlow<String> = MutableStateFlow("")
+
+    private val _selectedColorByUser: MutableStateFlow<TodoTypeColorModel> = MutableStateFlow(
+        TodoTypeColorModel(
+            color = Color.Transparent,
+            isLight = true
+        )
+    )
+    val selectedColorByUser get() = _selectedColorByUser
+
+    val addTodoTypeColorList: MutableStateFlow<List<TodoTypeColorModel>> =  MutableStateFlow(listOf(
+        TodoTypeColorModel(color = Color.Red, isLight = false),
+        TodoTypeColorModel(color = Color.Cyan, isLight = true),
+        TodoTypeColorModel(color = Color.Green, isLight = false),
+        TodoTypeColorModel(color = Color.Blue, isLight = true),
+        TodoTypeColorModel(color = Color.Magenta, isLight =  false),
+        TodoTypeColorModel(color = Color.Yellow, isLight = false),
+    ))
+
     init {
-//        insertTodoType("Home")
         getTodoTypesFromRoomDb()
         getTodosFromRoomDB()
-
-//        viewModelScope.launch {
-//            setObservers()
-//        }
-//        getTodos()
     }
 
-    init {
-//        val todoType = TodoType(typename = "GROCERY")
-//        viewModelScope.launch {
-//            todoDb.todoTypeDao.upsertTodoType(todoType)
-//        }
-//        val todo = Todo( createId = 1, title = "test", description = "testing", createdOn = LocalDateTime.now().toString(), target = LocalDateTime.now().toString(), todoTypeID = 1)
-//        viewModelScope.launch {
-//            todoDb.todoDao.upsertTodo(todo)
-//        }
-    }
 
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
@@ -87,7 +92,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         }
     }
 
-    fun getTodosFromRoomDB(searchValue: String? = "") {
+    private fun getTodosFromRoomDB(searchValue: String? = "") {
         viewModelScope.launch {
             homeRepository.getTodosFromRoomDb { list ->
                 _todos.value = list
@@ -125,10 +130,20 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         }
     }
 
-    fun insertTodoType(typeName: String, color: Color) {
+    fun insertTodoType() {
+        val typeName = enteredNameByUser.value
+        val color = selectedColorByUser.value.color
+        if(typeName.isBlank()) {
+            notifyUserAboutError("Type name cannot be empty.")
+            return
+        } else if(color.value == Color.Transparent.value) {
+            notifyUserAboutError("Select a color for your type - ${typeName}.")
+            return
+        }
         val todoType = TodoType(typename = typeName, color = color.toString())
         viewModelScope.launch {
             homeRepository.upsertTodoType(todoType = todoType)
+            hideAddTodoTypeAlert()
         }
     }
 

@@ -118,7 +118,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if(showAddTodoTypeAlert.value) {
-            AddTodoType()
+            AddTodoType(viewModel)
         }
 
         Column(
