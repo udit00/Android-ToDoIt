@@ -228,7 +228,7 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
             .padding(10.dp),
         border = BorderStroke(
             width = 2.dp,
-            color = Color.Red
+            color = Color(value = typeItem.color.toULong())
         )
     ) {
 
@@ -236,15 +236,16 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
             modifier = Modifier
                 .width(150.dp)
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
+                    color = Color.Gray
+//                    brush = Brush.linearGradient(
+//                        colors = listOf(
+////                            Color.Gray,
+////                            Color.Blue,
+//                            Color.LightGray,
 //                            Color.Gray,
-//                            Color.Blue,
-                            Color.LightGray,
-                            Color.Gray,
-                            Color.LightGray
-                        )
-                    )
+//                            Color.LightGray
+//                        )
+//                    )
                 ),
 //                              .height(100.dp)
         ) {
@@ -253,12 +254,14 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                     .padding(start = 15.dp, top = 10.dp),
                 fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
 //                                  .background(Color.Red),
-                text = "${totalTasksCount} Tasks"
+                text = "${totalTasksCount} Tasks",
+                color = Color.Black
             )
 
             CardTextWithText(
                 cardColors = CardColors(
-                    containerColor = Color.Red,
+                    containerColor = Color(value = typeItem.color.toULong()),
+//                    containerColor = Color.Red,
                     contentColor = Color.Green,
                     disabledContentColor = Color.Blue,
                     disabledContainerColor = Color.Green
@@ -284,7 +287,9 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                 Text(
                     modifier = Modifier.padding(end = 15.dp),
                     fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-                    text = "$pendingTasksCount /$totalTasksCount"
+                    text = "$pendingTasksCount /$totalTasksCount",
+                    color = Color.Black
+
                 )
             }
             LinearProgressIndicator(
@@ -292,8 +297,8 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                     .height(30.dp)
 //                                  .padding(15.dp),
                     .padding(bottom = 10.dp, start = 15.dp, end = 15.dp),
-                color = Color.Red,
-                trackColor = Color.Gray,
+                color = Color(value = typeItem.color.toULong()),
+                trackColor = Color.Black,
                 strokeCap = StrokeCap.Round,
                 progress = { progress }
             )

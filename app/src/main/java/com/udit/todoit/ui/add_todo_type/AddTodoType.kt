@@ -33,7 +33,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,35 +48,69 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.udit.todoit.entry_point.main_activity.ui.theme.AddTodoTypeColors
+import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import com.udit.todoit.ui.home.HomeViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTodoType(homeViewModel: HomeViewModel) {
 
-    val viewModel = AddTodoTypeViewModel(AddTodoTypeRepository(homeViewModel.roomDB))
+//    val viewModel = AddTodoTypeViewModel(AddTodoTypeRepository(homeViewModel.roomDB))
     val scope = rememberCoroutineScope()
+    val repository = AddTodoTypeRepository(roomDB = homeViewModel.roomDB)
 
     val showAlertTodoType = homeViewModel.showAddTodoTypeAlert.collectAsStateWithLifecycle()
 
-    val enteredTypeByUser = viewModel.enteredNameByUser.collectAsStateWithLifecycle()
+//    val enteredTypeByUser = viewModel.enteredNameByUser.collectAsStateWithLifecycle()
+//    val selectedColorByUser = viewModel.selectedColorByUser.collectAsStateWithLifecycle()
+//    val colorList = viewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
 
-    val selectedColorByUser = viewModel.selectedColorByUser.collectAsStateWithLifecycle()
-    val colorList = viewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
+    var enteredTypeByUser by remember { mutableStateOf("") }
+    var selectedColorByUser by remember { mutableStateOf(TodoTypeColorModel(color = Color.Transparent, isLight = false)) }
+    val colorList by remember { mutableStateOf(listOf(
+        TodoTypeColorModel(color = Color.Red, isLight = false),
+        TodoTypeColorModel(color = Color.Cyan, isLight = true),
+        TodoTypeColorModel(color = Color.Green, isLight = false),
+        TodoTypeColorModel(color = Color.Blue, isLight = true),
+        TodoTypeColorModel(color = Color.Magenta, isLight =  false),
+        TodoTypeColorModel(color = Color.Yellow, isLight = false),
+    ))}
 
     if(!showAlertTodoType.value) return
 
-    LaunchedEffect("") {
-        viewModel.closeAlert.collectLatest { closeAlert ->
-            if (closeAlert) {
-                homeViewModel.hideAddTodoTypeAlert()
-            }
-        }
+//    LaunchedEffect("") {
+//        viewModel.closeAlert.collectLatest { closeAlert ->
+//            if (closeAlert) {
+//                homeViewModel.hideAddTodoTypeAlert()
+//            }
+//        }
+//    }
+
+    fun closeAlert() {
+        homeViewModel.hideAddTodoTypeAlert()
     }
 
+    fun insertTodoType() {
+        val typeName = enteredTypeByUser
+        val color = selectedColorByUser.color
+        if(typeName.isBlank()) {
+//            notifyUserAboutError("Type name cannot be empty.")
+            return
+        } else if(color.value == Color.Transparent.value) {
+//            notifyUserAboutError("Select a color for your type - ${typeName}.")
+            return
+        }
+        val todoType = TodoType(typename = typeName, color = color.value.toString())
+        scope.launch(Dispatchers.IO) {
+            repository.upsertTodoType(todoType = todoType)
+            closeAlert()
+        }
+    }
 
 
 
@@ -95,7 +133,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                 ,
                 border = BorderStroke(
                     width = 2.dp,
-                    color = selectedColorByUser.value.color
+                    color = selectedColorByUser.color
                 )
 //                    .height(200.dp)
             ) {
@@ -135,9 +173,9 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                     OutlinedTextField(
 //                        modifier = Modifier,
 //                            .background(Color.Blue),
-                        value = enteredTypeByUser.value,
+                        value = enteredTypeByUser,
                         onValueChange = { value: String ->
-                            viewModel.enteredNameByUser.value = value
+                            enteredTypeByUser = value
                         },
                         label = { Text(text = "Enter Todo Type") },
                         leadingIcon = {
@@ -158,7 +196,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //                        contentPadding = PaddingValues(5.dp)
                     ) {
                         itemsIndexed(
-                            items = colorList.value
+                            items = colorList
                         ) { _: Int, colorModel: TodoTypeColorModel ->
 
 //                            Box(
@@ -182,7 +220,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                                     disabledContainerColor = Color.Transparent
                                 ),
                                 onClick = {
-                                    viewModel.selectedColorByUser.value = colorModel
+                                    selectedColorByUser = colorModel
                                 }
                             ) {
 
@@ -237,9 +275,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //                        }
                         ExtendedFloatingActionButton(
                             onClick = {
-                                scope.launch {
-                                    viewModel.insertTodoType()
-                                }
+                                insertTodoType()
                             },
 //                            containerColor = if(selectedColorByUser.color == Color.Transparent) {
 //                                Color.Black
@@ -247,10 +283,10 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //                                selectedColorByUser.color
 //                            },
                             containerColor = animateColorAsState(
-                                targetValue = if(selectedColorByUser.value.color == Color.Transparent) {
+                                targetValue = if(selectedColorByUser.color == Color.Transparent) {
                                     Color.Black
                                 } else {
-                                    selectedColorByUser.value.color
+                                    selectedColorByUser.color
                                 },
                                 animationSpec = tween(
                                     durationMillis = 500,
@@ -266,7 +302,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                                 modifier = Modifier,
 //                                color =  selectedColorByUser
                                 color = animateColorAsState(
-                                    targetValue = if(selectedColorByUser.value.color == Color.Transparent || !selectedColorByUser.value.isLight) {
+                                    targetValue = if(selectedColorByUser.color == Color.Transparent || !selectedColorByUser.isLight) {
                                         Color.White
                                     } else {
                                         Color.Black
@@ -301,14 +337,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
             dismissOnBackPress = true,
             usePlatformDefaultWidth = true,
             decorFitsSystemWindows = true,
-//            securePolicy = SecureFlagPolicy.SecureOn
         )
     )
 
-    DisposableEffect(Unit) {
-        onDispose {
-            // This will be called when the composable using this ViewModel is removed
-            Log.d("MyComposable", "Composable is disposed and ViewModel is likely cleared")
-        }
-    }
 }
