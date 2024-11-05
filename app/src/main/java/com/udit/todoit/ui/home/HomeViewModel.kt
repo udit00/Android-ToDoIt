@@ -8,24 +8,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.udit.todoit.base.BaseViewModel
+import com.udit.todoit.entry_point.main_activity.navigation.Screen
+import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository) :
-    BaseViewModel() {
+class HomeViewModel @Inject constructor(
+    private val homeRepository: HomeRepository,
+    private val navigationProvider: NavigationProvider
+) : BaseViewModel() {
 
     @Inject lateinit var roomDB: TodoDatabase
 
@@ -80,7 +86,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
                         Log.d(this@HomeViewModel.javaClass.simpleName, todoList.toString())
                     }
                 } catch (ex: Exception) {
-                    _errorMutableFlow.value = ex.message
+                    notifyUserAboutError(ex.message)
                 }
             }
         }
@@ -122,6 +128,10 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
             )
             homeRepository.upsertTodo(todo)
         }
+    }
+
+    fun navigateToUpsertTodoScreen(todoId: Int? = -1) {
+        navigationProvider.navController.navigate(Screen.UpsertTodoPage)
     }
 
 

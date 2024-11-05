@@ -110,7 +110,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
         floatingActionButton = {
             Button(
                 onClick = {
-                    viewModel.insertTodo()
+//                    viewModel.insertTodo()
+                    viewModel.navigateToUpsertTodoScreen()
                 }
             ) {
                 Text("Add")
@@ -347,7 +348,7 @@ fun TodoCard(todoItem: Todo) {
         ) {
             Icon(
                 imageVector = Icons.Default.Done,
-                contentDescription = "a",
+                contentDescription = "add",
                 modifier = Modifier
                     .drawBehind {
                         drawCircle(

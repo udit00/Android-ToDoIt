@@ -72,7 +72,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val isLoading = viewModel.isLoading.collectAsStateWithLifecycle()
+//    val isLoading = viewModel.isLoading.collectAsStateWithLifecycle()
+    val isLoading = viewModel.isLoading.collectAsStateWithLifecycle(false)
 
     LaunchedEffect(key1 = "") {
         scope.launch(Dispatchers.Main) {

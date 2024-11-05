@@ -13,7 +13,9 @@ import com.udit.todoit.ui.login.model.LoginModel
 import com.udit.todoit.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 //import kotlinx.coroutines.flow.drop
@@ -32,8 +34,8 @@ class LoginViewModel @Inject constructor(
 //    private val _loginMutableFlow: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
 //    val loginSuccessful get() = _loginMutableFlow.asStateFlow().drop(1)
 
-    private val _isLoadingMutableFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val isLoading get() = _isLoadingMutableFlow.asStateFlow()
+    private val _isLoadingMutableFlow: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val isLoading get() = _isLoadingMutableFlow.asSharedFlow()
 
     val userNameMobileNo = mutableStateOf("7011490531")
     val passWord = mutableStateOf("123456")
@@ -57,16 +59,16 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun toggleLoading() {
-        _isLoadingMutableFlow.value = !_isLoadingMutableFlow.value
-    }
-
     private fun showLoading() {
-        _isLoadingMutableFlow.value = true
+        viewModelScope.launch {
+            _isLoadingMutableFlow.emit(true)
+        }
     }
 
     private fun hideLoading() {
-        _isLoadingMutableFlow.value = false
+        viewModelScope.launch {
+            _isLoadingMutableFlow.emit(false)
+        }
     }
 
     private fun ifUserAlreadyLoggedIn(): Boolean {

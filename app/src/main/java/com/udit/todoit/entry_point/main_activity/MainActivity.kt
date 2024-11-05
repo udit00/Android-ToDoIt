@@ -15,6 +15,7 @@ import com.udit.todoit.entry_point.main_activity.navigation.Screen
 import com.udit.todoit.entry_point.main_activity.ui.theme.ToDoItTheme
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.ui.home.HomeScreen
+import com.udit.todoit.ui.upsert_todo.UpsertTodoScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -45,6 +46,9 @@ fun MainScreen (
         }
         composable<Screen.HomePage> {
             HomeScreen()
+        }
+        composable<Screen.UpsertTodoPage> {
+            UpsertTodoScreen()
         }
         
     }

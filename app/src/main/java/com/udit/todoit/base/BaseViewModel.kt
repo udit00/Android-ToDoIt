@@ -2,21 +2,25 @@ package com.udit.todoit.base
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import javax.inject.Inject
 
 @HiltViewModel
 open class BaseViewModel @Inject constructor(): ViewModel() {
 
-    protected val _errorMutableFlow = MutableStateFlow<String?>(null)
-    val errorFlow get() = _errorMutableFlow.asStateFlow()
+    protected val _errorMutableFlow = MutableSharedFlow<String?>()
+    val errorFlow get() = _errorMutableFlow.asSharedFlow()
 
     fun handleApiResponse(jsonObject: JSONObject): ApiPadhaiResponse? {
         var apiPadhaiResponse: ApiPadhaiResponse? = null
@@ -24,16 +28,20 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
             val gson = Gson()
             apiPadhaiResponse = gson.fromJson(jsonObject.toString(), ApiPadhaiResponse::class.java)
         } catch (ex: Exception) {
-            _errorMutableFlow.value = ex.message
+            viewModelScope.launch {
+                _errorMutableFlow.emit(ex.message)
+            }
         }
         return apiPadhaiResponse
     }
 
     fun notifyUserAboutError(errMsg: String?) {
-        if(errMsg != null) {
-            _errorMutableFlow.value = errMsg
-        } else {
-            _errorMutableFlow.value = "Something went wrong."
+        viewModelScope.launch {
+            if (errMsg != null) {
+                _errorMutableFlow.emit(errMsg)
+            } else {
+                _errorMutableFlow.emit("Something went wrong.")
+            }
         }
     }
 

@@ -5,7 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class Screen(val route: String) {
     @Serializable
-    object LoginPage: Screen(NavigationRoutes.LoginScreenRoute)
+    data object LoginPage: Screen(NavigationRoutes.LoginScreenRoute)
     @Serializable
-    object HomePage: Screen(NavigationRoutes.HomeScreenRoute)
+    data object HomePage: Screen(NavigationRoutes.HomeScreenRoute)
+    @Serializable
+    data object UpsertTodoPage: Screen(NavigationRoutes.UpsertTodoScreenRoute)
 }
