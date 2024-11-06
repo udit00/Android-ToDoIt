@@ -1,5 +1,7 @@
 package com.udit.todoit.ui.upsert_todo
 
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
@@ -8,6 +10,9 @@ import com.udit.todoit.room.entity.TodoType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +25,11 @@ class UpsertTodoViewModel @Inject constructor(
     val selectedTodoType: MutableState<TodoType?> = mutableStateOf(null)
     private val _todoTypesList: MutableStateFlow<List<TodoType>> = MutableStateFlow(listOf())
     val todoTypesList get() = _todoTypesList
+    
+    val showDatePicker = mutableStateOf(false)
+    @OptIn(ExperimentalMaterial3Api::class)
+//    val datePickerState = mutableStateOf(DatePickerState())
+
 
 
     val isTodoTypeDropDownMenuExpanded = mutableStateOf(false)
@@ -35,4 +45,8 @@ class UpsertTodoViewModel @Inject constructor(
         }
     }
 
+    fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return formatter.format(Date(millis))
+    }
 }
