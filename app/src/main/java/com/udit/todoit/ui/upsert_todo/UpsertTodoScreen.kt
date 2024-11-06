@@ -64,10 +64,17 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel()) {
                     Text("Todo")
                 },
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Go Back"
-                    )
+                    IconButton(
+                        onClick = {
+                            viewModel.goBack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Go Back",
+
+                            )
+                    }
                 },
                 modifier = Modifier
             )

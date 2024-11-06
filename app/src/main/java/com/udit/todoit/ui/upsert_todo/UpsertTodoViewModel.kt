@@ -6,6 +6,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.udit.todoit.base.BaseViewModel
+import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.entity.TodoType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UpsertTodoViewModel @Inject constructor(
-    private val repository: UpsertTodoRepository
+    private val repository: UpsertTodoRepository,
+    private val navigationProvider: NavigationProvider
 ): BaseViewModel() {
 
     val todoTitle = mutableStateOf("")
@@ -48,5 +50,9 @@ class UpsertTodoViewModel @Inject constructor(
     fun convertMillisToDate(millis: Long): String {
         val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
         return formatter.format(Date(millis))
+    }
+
+    fun goBack() {
+        navigationProvider.navController.popBackStack()
     }
 }
