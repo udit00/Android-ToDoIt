@@ -11,5 +11,7 @@ data class TodoType(
     @SerializedName("type_id")
     @PrimaryKey(autoGenerate = true)
     val typeId: Int = 0,
-    val color: String
+    val color: String,
+    @SerializedName("is_light")
+    val isLight: Boolean
 )

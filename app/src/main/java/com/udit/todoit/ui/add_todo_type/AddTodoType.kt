@@ -1,6 +1,7 @@
 package com.udit.todoit.ui.add_todo_type
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.tween
@@ -31,73 +32,62 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.udit.todoit.entry_point.main_activity.ui.theme.AddTodoTypeColors
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTodoType(viewModel: AddTodoTypeViewModel) {
-
-//    val viewModel = AddTodoTypeViewModel(AddTodoTypeRepository(homeViewModel.roomDB))
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-//    val repository = AddTodoTypeRepository(roomDB = viewModel.repository.roomDB)
-
     val showAlertTodoType = viewModel.showTodoType.collectAsStateWithLifecycle()
 
-//    val enteredTypeByUser = viewModel.enteredNameByUser.collectAsStateWithLifecycle()
-//    val selectedColorByUser = viewModel.selectedColorByUser.collectAsStateWithLifecycle()
-//    val colorList = viewModel.addTodoTypeColorList.collectAsStateWithLifecycle()
+    var enteredTypeByUser by viewModel.todoTypeTitle
+    var selectedColorByUser by viewModel.selectedTodoTypeColor
+    val colorList by viewModel.todoTypeColorList
 
-    var enteredTypeByUser by remember { mutableStateOf("") }
-    var selectedColorByUser by remember { mutableStateOf(TodoTypeColorModel(color = Color.Transparent, isLight = false)) }
-    val colorList by remember { mutableStateOf(listOf(
-        TodoTypeColorModel(color = Color.Red, isLight = false),
-        TodoTypeColorModel(color = Color.Cyan, isLight = true),
-        TodoTypeColorModel(color = Color.Green, isLight = false),
-        TodoTypeColorModel(color = Color.Blue, isLight = true),
-        TodoTypeColorModel(color = Color.Magenta, isLight =  false),
-        TodoTypeColorModel(color = Color.Yellow, isLight = false),
-    ))}
+    val todoTypeId by viewModel.todoTypeId.collectAsStateWithLifecycle()
 
     if(!showAlertTodoType.value) return
 
-//    LaunchedEffect("") {
-//        viewModel.closeAlert.collectLatest { closeAlert ->
-//            if (closeAlert) {
-//                homeViewModel.hideAddTodoTypeAlert()
-//            }
-//        }
-//    }
+    LaunchedEffect("") {
+        scope.launch(Dispatchers.Main) {
+            viewModel.errorFlow.collectLatest { errMsg: String? ->
+                Log.d("TOAST", errMsg?:"HIT")
+                errMsg?.let {
+//                    Utils.showToast(context, it)
+//                    Log.d("TOAST", errMsg)
+                    Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
 
-    fun closeAlert() {
-        viewModel.hide()
     }
 
-    fun insertTodoType() {
-        val typeName = enteredTypeByUser
+//    fun closeAlert() {
+//        viewModel.hide()
+//    }
+
+    fun upsertTodoType() {
+        val typeName = enteredTypeByUser.trim()
         val color = selectedColorByUser.color
+        val isLight = selectedColorByUser.isLight
         if(typeName.isBlank()) {
 //            notifyUserAboutError("Type name cannot be empty.")
             return
@@ -105,11 +95,15 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
 //            notifyUserAboutError("Select a color for your type - ${typeName}.")
             return
         }
-        val todoType = TodoType(typename = typeName, color = color.value.toString())
+        val todoType = TodoType(
+            typeId = todoTypeId,
+            typename = typeName,
+            color = color.value.toString(),
+            isLight = isLight
+        )
         scope.launch(Dispatchers.IO) {
-//            repository.upsertTodoType(todoType = todoType)
             viewModel.upsertTodoType(todoType)
-            closeAlert()
+//            closeAlert()
         }
     }
 
@@ -178,7 +172,7 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
                         onValueChange = { value: String ->
                             enteredTypeByUser = value
                         },
-                        label = { Text(text = "Enter Todo Type") },
+                        label = { Text(text = "Todo Type") },
                         leadingIcon = {
                             Icon(imageVector = Icons.Default.Info, contentDescription = "")
                         }
@@ -276,7 +270,7 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
 //                        }
                         ExtendedFloatingActionButton(
                             onClick = {
-                                insertTodoType()
+                                upsertTodoType()
                             },
 //                            containerColor = if(selectedColorByUser.color == Color.Transparent) {
 //                                Color.Black
@@ -299,7 +293,11 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
 
                         ) {
                             Text(
-                                text = "Add",
+                                text = if(todoTypeId == 0) {
+                                    "Add"
+                                } else {
+                                    "Update"
+                                },
                                 modifier = Modifier,
 //                                color =  selectedColorByUser
                                 color = animateColorAsState(

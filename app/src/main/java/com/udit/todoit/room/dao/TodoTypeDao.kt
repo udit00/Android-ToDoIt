@@ -13,4 +13,11 @@ interface TodoTypeDao {
 
     @Query("Select * from todotype")
     fun getTodoTypes(): Flow<List<TodoType>>
+
+
+    @Query("Select * from todotype where typeId = :todoTypeId")
+    fun getTodoTypeDetails(todoTypeId: Int): Flow<TodoType?>
+
+    @Query("select iif((select count(*) from todotype where typename = :typeName) > 0, 1, 0)")
+    fun checkIfTodoTypeAlreadyExists(typeName: String): Flow<Boolean>
 }

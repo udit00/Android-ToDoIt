@@ -1,9 +1,12 @@
 package com.udit.todoit.ui.home
 
+import android.R
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -98,6 +101,13 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: Ad
         }
     }
 
+//    fun openTodoTypeEdit(todoTypeId: Int) {
+//        AddTodoType(
+//            viewModel = addTodoTypeViewModel,
+//            todoTypeId = typeItem.typeId
+//        )
+//    }
+
 
     Scaffold(
         topBar = {
@@ -188,7 +198,14 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: Ad
                         items = todoTypeList.value,
                         key = { index: Int, item: TodoType -> item.typeId }
                     ) { index, typeItem ->
-                        HeaderTypeCard(typeItem, 6, 10)
+                        HeaderTypeCard(
+                            typeItem = typeItem,
+                            pendingTasksCount = 6,
+                            totalTasksCount = 10,
+                            editTodoType = { todoType ->
+                                todoTypeViewModel.show(todoType.typeId)
+                            }
+                        )
                     }
 
                 }
@@ -220,13 +237,23 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: Ad
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: Int) {
+fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: Int, editTodoType: (todoType: TodoType) -> Unit) {
     val progress by remember { mutableFloatStateOf((pendingTasksCount.toFloat() / totalTasksCount.toFloat()).toFloat()) }
 //    val progress by remember { mutableFloatStateOf(0.6f) }
     Card(
         modifier = Modifier
-            .padding(10.dp),
+            .padding(10.dp)
+            .combinedClickable(
+                onClick = {
+
+                },
+                onLongClick = {
+                    editTodoType(typeItem)
+                }
+            )
+        ,
         border = BorderStroke(
             width = 2.dp,
             color = Color(value = typeItem.color.toULong())
