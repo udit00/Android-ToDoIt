@@ -5,7 +5,7 @@ import com.udit.todoit.room.entity.TodoType
 import javax.inject.Inject
 
 
-class AddTodoTypeRepository (private val roomDB: TodoDatabase) {
+class AddTodoTypeRepository @Inject constructor(private val roomDB: TodoDatabase) {
 
     suspend fun upsertTodoType(todoType: TodoType) {
         roomDB.todoTypeDao.upsertTodoType(todoType)

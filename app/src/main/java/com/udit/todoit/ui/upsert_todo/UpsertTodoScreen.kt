@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
@@ -43,12 +45,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.udit.todoit.ui.add_todo_type.AddTodoType
+import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel()) {
+fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()) {
 
     val todoTypesList = viewModel.todoTypesList.collectAsStateWithLifecycle()
+    val showAddTodoType = todoTypeViewModel.showTodoType.collectAsStateWithLifecycle()
 //    val isExpanded = viewModel.isTodoTypeDropDownMenuExpanded.collectAsStateWithLifecycle()
 
     val datePickerState = rememberDatePickerState()
@@ -83,6 +88,11 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel()) {
 
         }
     ) { innerPadding ->
+
+        if(showAddTodoType.value) {
+            AddTodoType(todoTypeViewModel)
+        }
+
         Column(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -130,6 +140,11 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel()) {
 //
 //            )
 
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
 
             TextButton(
                 colors = ButtonColors(
@@ -184,6 +199,18 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel()) {
                             viewModel.selectedTodoType.value = entry
                             viewModel.isTodoTypeDropDownMenuExpanded.value = false
                         },
+                    )
+                }
+            }
+                IconButton(
+                    modifier = Modifier,
+                    onClick = {
+                        todoTypeViewModel.show()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AddCircle,
+                        contentDescription = null
                     )
                 }
             }

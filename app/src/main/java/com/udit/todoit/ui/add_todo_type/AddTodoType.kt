@@ -50,21 +50,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.udit.todoit.entry_point.main_activity.ui.theme.AddTodoTypeColors
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
-import com.udit.todoit.ui.home.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTodoType(homeViewModel: HomeViewModel) {
+fun AddTodoType(viewModel: AddTodoTypeViewModel) {
 
 //    val viewModel = AddTodoTypeViewModel(AddTodoTypeRepository(homeViewModel.roomDB))
     val scope = rememberCoroutineScope()
-    val repository = AddTodoTypeRepository(roomDB = homeViewModel.roomDB)
+//    val repository = AddTodoTypeRepository(roomDB = viewModel.repository.roomDB)
 
-    val showAlertTodoType = homeViewModel.showAddTodoTypeAlert.collectAsStateWithLifecycle()
+    val showAlertTodoType = viewModel.showTodoType.collectAsStateWithLifecycle()
 
 //    val enteredTypeByUser = viewModel.enteredNameByUser.collectAsStateWithLifecycle()
 //    val selectedColorByUser = viewModel.selectedColorByUser.collectAsStateWithLifecycle()
@@ -92,7 +92,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //    }
 
     fun closeAlert() {
-        homeViewModel.hideAddTodoTypeAlert()
+        viewModel.hide()
     }
 
     fun insertTodoType() {
@@ -107,7 +107,8 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
         }
         val todoType = TodoType(typename = typeName, color = color.value.toString())
         scope.launch(Dispatchers.IO) {
-            repository.upsertTodoType(todoType = todoType)
+//            repository.upsertTodoType(todoType = todoType)
+            viewModel.upsertTodoType(todoType)
             closeAlert()
         }
     }
@@ -123,7 +124,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
 //            .fillMaxSize()
         ,
         onDismissRequest = {
-            homeViewModel.hideAddTodoTypeAlert()
+            viewModel.hide()
         },
         content = {
 
@@ -160,7 +161,7 @@ fun AddTodoType(homeViewModel: HomeViewModel) {
                                 .clip(ShapeDefaults.Large)
                                 .background(AddTodoTypeColors.closeAlertButton),
                             onClick = {
-                                homeViewModel.hideAddTodoTypeAlert()
+                                viewModel.hide()
                             },
                         ) {
                             Icon(

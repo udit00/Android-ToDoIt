@@ -61,6 +61,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
+import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
 
@@ -72,14 +73,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
     val todoTypeList = viewModel.todoTypes.collectAsStateWithLifecycle()
     val progressTemporary by remember { mutableStateOf(0.6f) }
 
-    val showAddTodoTypeAlert = viewModel.showAddTodoTypeAlert.collectAsStateWithLifecycle()
+    val showAddTodoTypeAlert = todoTypeViewModel.showTodoType.collectAsStateWithLifecycle()
     val colorRed = Color.Red
 
     viewModel.logger(colorRed.toString())
@@ -122,7 +123,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if(showAddTodoTypeAlert.value) {
-            AddTodoType(homeViewModel = viewModel)
+            AddTodoType(todoTypeViewModel)
         }
 
         Column(
@@ -160,9 +161,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                             .padding(end = 0.dp),
 //                            .offset(x = 0.dp, y = -20.dp),
                         onClick = {
-//                            viewModel.openAddTodoTypeAlert()
-//                            AddTodoType()
-                            viewModel.showAddTodoTypeAlert()
+//                            viewModel.showAddTodoTypeAlert()
+                            todoTypeViewModel.show()
                         }
                     ) {
                         Icon(
