@@ -21,9 +21,12 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -49,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -262,7 +266,7 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
 
         Column(
             modifier = Modifier
-                .width(150.dp)
+                .width(180.dp)
                 .background(
                     color = Color.Gray
 //                    brush = Brush.linearGradient(
@@ -277,15 +281,46 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                 ),
 //                              .height(100.dp)
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(start = 15.dp, top = 10.dp),
-                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-//                                  .background(Color.Red),
-                text = "${totalTasksCount} Tasks",
-                color = Color.Black
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+//                        .background(Color.Red)
 
+                ,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 15.dp, top = 10.dp)
+                    ,
+                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+//                                  .background(Color.Red),
+                    text = "${totalTasksCount} Tasks",
+                    color = Color.Black
+                )
+
+                IconButton(
+                    modifier = Modifier
+//                        .background(Color.Red)
+                        .height(25.dp)
+                        .clip(CircleShape)
+//                        .background(Color.Red)
+//                        .padding(0.dp)
+//                        .padding(0.dp)
+                    ,
+                    onClick = {
+
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier
+//                            .height(10.dp)
+                        ,
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = null
+                    )
+                }
+            }
             CardTextWithText(
                 cardColors = CardColors(
                     containerColor = Color(value = typeItem.color.toULong()),
@@ -302,7 +337,11 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                         text = typeItem.typename,
                         modifier = Modifier
                             .padding(vertical = 0.dp, horizontal = 10.dp),
-                        color = Color.White
+                        color = if(typeItem.isLight) {
+                            Color.Black
+                        } else {
+                            Color.White
+                        }
                     )
                 }
 

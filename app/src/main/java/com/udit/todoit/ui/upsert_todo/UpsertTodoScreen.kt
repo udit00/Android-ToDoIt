@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.udit.todoit.ui.add_todo_type.AddTodoType
@@ -50,16 +51,17 @@ import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()) {
+fun UpsertTodoScreen(
+    viewModel: UpsertTodoViewModel = hiltViewModel(),
+    todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()
+) {
 
     val todoTypesList = viewModel.todoTypesList.collectAsStateWithLifecycle()
     val showAddTodoType = todoTypeViewModel.showTodoType.collectAsStateWithLifecycle()
 //    val isExpanded = viewModel.isTodoTypeDropDownMenuExpanded.collectAsStateWithLifecycle()
 
-    val datePickerState = rememberDatePickerState()
-    val selectedDate = datePickerState.selectedDateMillis?.let {
-        viewModel.convertMillisToDate(it)
-    } ?: ""
+//    val datePickerState = rememberDatePickerState()
+//    val selectedDate = viewModel.targetDate
 
     Scaffold(
         modifier = Modifier,
@@ -89,12 +91,14 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeV
         }
     ) { innerPadding ->
 
-        if(showAddTodoType.value) {
+        if (showAddTodoType.value) {
             AddTodoType(todoTypeViewModel)
         }
 
         Column(
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -146,62 +150,65 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeV
                 horizontalArrangement = Arrangement.Center
             ) {
 
-            TextButton(
-                colors = ButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.Black,
-                    disabledContentColor = Color.Transparent,
-                    disabledContainerColor = Color.Transparent
-                ),
-                modifier = Modifier,
-                onClick = {
-                    viewModel.isTodoTypeDropDownMenuExpanded.value = true
-                },
-
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(vertical = 10.dp, horizontal = 20.dp),
-                    text = viewModel.selectedTodoType.value?.typename ?: "Select",
-                    color = if(viewModel.selectedTodoType.value != null) {
-                        Color(value = viewModel.selectedTodoType.value!!.color.toULong())
-                    } else {
-                        Color.White
-                    }
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowDown,
-                    tint = if(viewModel.selectedTodoType.value != null) {
-                        Color(value = viewModel.selectedTodoType.value!!.color.toULong())
-                    } else {
-                        Color.White
+                TextButton(
+                    colors = ButtonColors(
+                        contentColor = Color.White,
+                        containerColor = Color.Black,
+                        disabledContentColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
+                    ),
+                    modifier = Modifier,
+                    onClick = {
+                        viewModel.isTodoTypeDropDownMenuExpanded.value = true
                     },
-                    contentDescription = null
-                )
-            }
 
-            DropdownMenu(
-                modifier = Modifier,
-                expanded = viewModel.isTodoTypeDropDownMenuExpanded.value,
-                onDismissRequest = {
-                    viewModel.isTodoTypeDropDownMenuExpanded.value = false
-                },
-
-            ) {
-                todoTypesList.value.forEach { entry ->
-                    println(entry.typename)
-                    DropdownMenuItem(
-                        modifier = Modifier,
-                        text = {
-                            Text(entry.typename)
+                    ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 10.dp, horizontal = 20.dp),
+                        text = viewModel.selectedTodoType.value?.typename ?: "Select",
+                        color = if (viewModel.selectedTodoType.value != null) {
+                            Color(value = viewModel.selectedTodoType.value!!.color.toULong())
+                        } else {
+                            Color.White
+                        }
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        tint = if (viewModel.selectedTodoType.value != null) {
+                            Color(value = viewModel.selectedTodoType.value!!.color.toULong())
+                        } else {
+                            Color.White
                         },
-                        onClick = {
-                            viewModel.selectedTodoType.value = entry
-                            viewModel.isTodoTypeDropDownMenuExpanded.value = false
-                        },
+                        contentDescription = null
                     )
                 }
-            }
+
+                DropdownMenu(
+                    modifier = Modifier,
+                    expanded = viewModel.isTodoTypeDropDownMenuExpanded.value,
+                    properties = PopupProperties(
+
+                    ),
+                    onDismissRequest = {
+                        viewModel.isTodoTypeDropDownMenuExpanded.value = false
+                    },
+
+                    ) {
+                    todoTypesList.value.forEach { entry ->
+                        println(entry.typename)
+                        DropdownMenuItem(
+                            modifier = Modifier,
+                            text = {
+                                Text(entry.typename)
+                            },
+                            onClick = {
+                                viewModel.selectedTodoType.value = entry
+                                viewModel.isTodoTypeDropDownMenuExpanded.value = false
+                            },
+                        )
+                    }
+                }
                 IconButton(
                     modifier = Modifier,
                     onClick = {
@@ -217,12 +224,16 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeV
 
 
             OutlinedTextField(
-                value = selectedDate,
-                onValueChange = { },
+                value = viewModel.targetDate.value,
+                onValueChange = { date ->
+                    viewModel.targetDate.value = date
+                },
                 label = { Text("Target") },
                 readOnly = true,
                 trailingIcon = {
-                    IconButton(onClick = { viewModel.showDatePicker.value = !viewModel.showDatePicker.value }) {
+                    IconButton(onClick = {
+                        viewModel.showDatePicker.value = !viewModel.showDatePicker.value
+                    }) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = "Select date"
@@ -231,6 +242,7 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeV
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(vertical = 0.dp, horizontal = 20.dp)
                     .height(64.dp)
             )
 
@@ -248,7 +260,7 @@ fun UpsertTodoScreen(viewModel: UpsertTodoViewModel = hiltViewModel(), todoTypeV
                             .padding(16.dp)
                     ) {
                         DatePicker(
-                            state = datePickerState,
+                            state = viewModel.targetDatePickerState,
                             showModeToggle = false
                         )
                     }
