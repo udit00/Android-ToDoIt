@@ -37,10 +37,10 @@ class UpsertTodoViewModel @Inject constructor(
     val targetDatePickerState = DatePickerState(
         locale = Locale.getDefault()
     )
-    @OptIn(ExperimentalMaterial3Api::class)
-    val targetDate = mutableStateOf(targetDatePickerState.selectedDateMillis?.let {
-        convertMillisToDate(it)
-    } ?: "")
+//    @OptIn(ExperimentalMaterial3Api::class)
+//    val targetDate = mutableStateOf(
+//    targetDatePickerState.selectedDateMillis?.let { convertMillisToDate(it) } ?: "Test"
+//    )
 
     val isTodoTypeDropDownMenuExpanded = mutableStateOf(false)
 
@@ -55,30 +55,30 @@ class UpsertTodoViewModel @Inject constructor(
         }
     }
 
-    private fun validateAndSave(todoId: Int = 0) {
-        if(todoTitle.value.isBlank()) {
-            notifyUserAboutError("Title cannot be empty.")
-        } else if(todoDescription.value.isBlank()) {
-            notifyUserAboutError("Description cannot be empty.")
-        } else if(selectedTodoType.value == null) {
-            notifyUserAboutError("No Type was selected. You could create a new one by clicking on the '+' button.")
-        } else if(targetDate.value.isBlank()) {
-            notifyUserAboutError("Target cannot be empty.")
-        } else {
-            val localDateTime: LocalDateTime = LocalDateTime.now()
-            val todo = Todo(
-                todoID = todoId,
-                todoTypeID = selectedTodoType.value!!.typeId,
-                createId = 1,
-                title = todoTitle.value,
-                description = todoDescription.value,
-                createdOn = localDateTime.toString(),
-                target = targetDate.value
-
-            )
-            upsertTodo(todo)
-        }
-    }
+//    private fun validateAndSave(todoId: Int = 0) {
+//        if(todoTitle.value.isBlank()) {
+//            notifyUserAboutError("Title cannot be empty.")
+//        } else if(todoDescription.value.isBlank()) {
+//            notifyUserAboutError("Description cannot be empty.")
+//        } else if(selectedTodoType.value == null) {
+//            notifyUserAboutError("No Type was selected. You could create a new one by clicking on the '+' button.")
+//        } else if(targetDate.value.isBlank()) {
+//            notifyUserAboutError("Target cannot be empty.")
+//        } else {
+//            val localDateTime: LocalDateTime = LocalDateTime.now()
+//            val todo = Todo(
+//                todoID = todoId,
+//                todoTypeID = selectedTodoType.value!!.typeId,
+//                createId = 1,
+//                title = todoTitle.value,
+//                description = todoDescription.value,
+//                createdOn = localDateTime.toString(),
+//                target = targetDate.value
+//
+//            )
+//            upsertTodo(todo)
+//        }
+//    }
 
     private fun upsertTodo(todo: Todo) {
         viewModelScope.launch {
@@ -89,7 +89,7 @@ class UpsertTodoViewModel @Inject constructor(
     }
 
     fun convertMillisToDate(millis: Long): String {
-        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val formatter = SimpleDateFormat("EEE, MMM d HH:mm aaa", Locale.getDefault())
         return formatter.format(Date(millis))
     }
 

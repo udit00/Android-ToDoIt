@@ -61,7 +61,9 @@ fun UpsertTodoScreen(
 //    val isExpanded = viewModel.isTodoTypeDropDownMenuExpanded.collectAsStateWithLifecycle()
 
 //    val datePickerState = rememberDatePickerState()
-//    val selectedDate = viewModel.targetDate
+    val selectedDate = viewModel.targetDatePickerState.selectedDateMillis?.let {
+        viewModel.convertMillisToDate(it)
+    } ?: ""
 
     Scaffold(
         modifier = Modifier,
@@ -224,9 +226,10 @@ fun UpsertTodoScreen(
 
 
             OutlinedTextField(
-                value = viewModel.targetDate.value,
+//                value = viewModel.targetDate.value,
+                value = selectedDate,
                 onValueChange = { date ->
-                    viewModel.targetDate.value = date
+//                    viewModel.targetDate.value = date
                 },
                 label = { Text("Target") },
                 readOnly = true,
@@ -261,7 +264,7 @@ fun UpsertTodoScreen(
                     ) {
                         DatePicker(
                             state = viewModel.targetDatePickerState,
-                            showModeToggle = false
+                            showModeToggle = false                            
                         )
                     }
                 }
