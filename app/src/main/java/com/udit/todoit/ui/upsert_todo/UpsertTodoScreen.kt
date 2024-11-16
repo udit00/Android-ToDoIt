@@ -248,6 +248,7 @@ fun UpsertTodoScreen(
                     .padding(vertical = 0.dp, horizontal = 20.dp)
                     .height(64.dp)
             )
+            Text("a")
 
             if (viewModel.showDatePicker.value) {
                 Popup(
