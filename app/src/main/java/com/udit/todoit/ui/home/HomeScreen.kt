@@ -39,6 +39,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -80,7 +83,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
@@ -95,7 +101,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: Ad
     LaunchedEffect(key1 = "") {
         scope.launch(Dispatchers.Main) {
             viewModel.errorFlow.collectLatest { errMsg: String? ->
-                Log.d("TOAST", errMsg?:"HIT")
+                Log.d("TOAST", errMsg ?: "HIT")
                 errMsg?.let {
 //                    Utils.showToast(context, it)
 //                    Log.d("TOAST", errMsg)
@@ -112,138 +118,158 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), todoTypeViewModel: Ad
 //        )
 //    }
 
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Home")
-                },
-                modifier = Modifier
-            )
-        },
-        floatingActionButton = {
-            Button(
-                onClick = {
-//                    viewModel.insertTodo()
-                    viewModel.navigateToUpsertTodoScreen()
-                }
-            ) {
-                Text("Add")
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(viewModel.userData.value?.Name ?: "Guest", modifier = Modifier.padding(16.dp))
+                HorizontalDivider()
+                NavigationDrawerItem(
+                    label = { Text(text = "Drawer Item") },
+                    selected = false,
+                    onClick = { /*TODO*/ }
+                )
+                // ...other drawer items
             }
         }
+    ) {
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("Home")
+                    },
+                    modifier = Modifier
+                )
+            },
+            floatingActionButton = {
+                Button(
+                    onClick = {
+//                    viewModel.insertTodo()
+                        viewModel.navigateToUpsertTodoScreen()
+                    }
+                ) {
+                    Text("Add")
+                }
+            }
 //        modifier = Modifier.background(MaterialTheme.colorScheme.primary)
 //        modifier = Modifier.background(Color.Gray)
-    ) { innerPadding ->
+        ) { innerPadding ->
 
-        if(showAddTodoTypeAlert.value) {
-            AddTodoType(todoTypeViewModel)
-        }
+            if (showAddTodoTypeAlert.value) {
+                AddTodoType(todoTypeViewModel)
+            }
 
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .background(Color.Gray)
-        ) {
-            Column (
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 2.dp)
-                    .background(
-                        color = Color(
-                            red = 203,
-                            green = 203,
-                            blue = 203,
-                            alpha = 123
-                        )
-                    )
+                    .padding(innerPadding)
+                    .background(Color.Gray)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .padding(start = 10.dp)
-//                        .background(Color.Red)
-                        .fillMaxWidth(),
-//                        .background(Color.Red),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxWidth()
+                        .padding(start = 2.dp)
+                        .background(
+                            color = Color(
+                                red = 203,
+                                green = 203,
+                                blue = 203,
+                                alpha = 123
+                            )
+                        )
                 ) {
-                    CardText(
-                        text = "Categories"
-                    )
-                    IconButton(
+                    Row(
                         modifier = Modifier
-                            .padding(end = 0.dp),
-//                            .offset(x = 0.dp, y = -20.dp),
-                        onClick = {
-//                            viewModel.showAddTodoTypeAlert()
-                            todoTypeViewModel.show()
-                        }
+                            .padding(start = 10.dp)
+//                        .background(Color.Red)
+                            .fillMaxWidth(),
+//                        .background(Color.Red),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = "a",
+                        CardText(
+                            text = "Categories"
+                        )
+                        IconButton(
                             modifier = Modifier
+                                .padding(end = 0.dp),
+//                            .offset(x = 0.dp, y = -20.dp),
+                            onClick = {
+//                            viewModel.showAddTodoTypeAlert()
+                                todoTypeViewModel.show()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddCircle,
+                                contentDescription = "a",
+                                modifier = Modifier
 //                                .drawBehind {
 //                                    drawCircle(
 //                                        color = Color.Green,
 //                                        radius = this.size.maxDimension
 //                                    )
 //                                },
-                        )
+                            )
+                        }
                     }
-                }
-                LazyRow(
-                    modifier = Modifier
-                        .padding(top = 0.dp, start = 5.dp, end = 5.dp)
-                        .fillMaxWidth()
+                    LazyRow(
+                        modifier = Modifier
+                            .padding(top = 0.dp, start = 5.dp, end = 5.dp)
+                            .fillMaxWidth()
 //                        .background(Color.Red)
-                ) {
-                    itemsIndexed(
-                        items = todoTypeList.value,
-                        key = { index: Int, item: TodoType -> item.typeId }
-                    ) { index, typeItem ->
-                        HeaderTypeCard(
-                            typeItem = typeItem,
-                            pendingTasksCount = 6,
-                            totalTasksCount = 10,
-                            editTodoType = { todoType ->
-                                todoTypeViewModel.show(todoType.typeId)
-                            }
-                        )
+                    ) {
+                        itemsIndexed(
+                            items = todoTypeList.value,
+                            key = { index: Int, item: TodoType -> item.typeId }
+                        ) { index, typeItem ->
+                            HeaderTypeCard(
+                                typeItem = typeItem,
+                                pendingTasksCount = 6,
+                                totalTasksCount = 10,
+                                editTodoType = { todoType ->
+                                    todoTypeViewModel.show(todoType.typeId)
+                                }
+                            )
+                        }
+
                     }
 
+
                 }
-
-
-            }
 //            HorizontalDivider(
 //                thickness = 2.dp,
 //                color = Color.Black,
 //                modifier = Modifier
 ////                    .padding(vertical = 0.dp, horizontal = 10.dp),
 //            )
-            LazyColumn(
-                modifier = Modifier
+                LazyColumn(
+                    modifier = Modifier
 //                    .background(MaterialTheme.colorScheme.primary)
-                    .fillMaxSize()
-                    .padding(top = 0.dp)
-            ) {
+                        .fillMaxSize()
+                        .padding(top = 0.dp)
+                ) {
 
-                itemsIndexed(
-                    items = todoList.value,
-                    key = { index: Int, item: Todo -> item.todoID }
-                ) { index, todoItem ->
-                    TodoCard(todoItem)
+                    itemsIndexed(
+                        items = todoList.value,
+                        key = { index: Int, item: Todo -> item.todoID }
+                    ) { index, todoItem ->
+                        TodoCard(todoItem)
+                    }
                 }
-            }
 
+            }
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: Int, editTodoType: (todoType: TodoType) -> Unit) {
+fun HeaderTypeCard(
+    typeItem: TodoType,
+    pendingTasksCount: Int,
+    totalTasksCount: Int,
+    editTodoType: (todoType: TodoType) -> Unit
+) {
     val progress by remember { mutableFloatStateOf((pendingTasksCount.toFloat() / totalTasksCount.toFloat()).toFloat()) }
 //    val progress by remember { mutableFloatStateOf(0.6f) }
     Card(
@@ -256,8 +282,7 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                 onLongClick = {
                     editTodoType(typeItem)
                 }
-            )
-        ,
+            ),
         border = BorderStroke(
             width = 2.dp,
             color = Color(value = typeItem.color.toULong())
@@ -291,8 +316,7 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
             ) {
                 Text(
                     modifier = Modifier
-                        .padding(start = 15.dp, top = 10.dp)
-                    ,
+                        .padding(start = 15.dp, top = 10.dp),
                     fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
 //                                  .background(Color.Red),
                     text = "${totalTasksCount} Tasks",
@@ -337,7 +361,7 @@ fun HeaderTypeCard(typeItem: TodoType, pendingTasksCount: Int, totalTasksCount: 
                         text = typeItem.typename,
                         modifier = Modifier
                             .padding(vertical = 0.dp, horizontal = 10.dp),
-                        color = if(typeItem.isLight) {
+                        color = if (typeItem.isLight) {
                             Color.Black
                         } else {
                             Color.White
@@ -425,4 +449,5 @@ fun TodoCard(todoItem: Todo) {
             )
         }
     }
+
 }

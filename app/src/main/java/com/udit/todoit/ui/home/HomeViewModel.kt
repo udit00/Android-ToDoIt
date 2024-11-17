@@ -13,8 +13,10 @@ import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
+import com.udit.todoit.shared_preferences.StorageHelper
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
+import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
+    private val storageHelper: StorageHelper,
     private val navigationProvider: NavigationProvider
 ) : BaseViewModel() {
 
@@ -43,6 +46,9 @@ class HomeViewModel @Inject constructor(
 
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
+
+    private val _userData: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
+    val userData get() = _userData
 
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
@@ -61,12 +67,15 @@ class HomeViewModel @Inject constructor(
 //                hideLoading()
             }
         }
+        getUserData()
         getTodoTypesFromRoomDb()
         getTodosFromRoomDB()
     }
 
-
-
+    private fun getUserData() {
+        val loginData = storageHelper.getLoginData()
+        _userData.value = loginData
+    }
 
     fun getTodos(searchValue: String? = "") {
         val searchedString: String = if (searchValue.isNullOrBlank()) "" else searchValue

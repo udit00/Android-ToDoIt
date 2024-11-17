@@ -74,10 +74,12 @@ class LoginViewModel @Inject constructor(
     private fun ifUserAlreadyLoggedIn(): Boolean {
         val loginData = storageHelper.getLoginData()
         if(loginData != null) {
-            Log.d("", loginData.toString())
+//            Log.d("", loginData.toString())
             if(loginData.UserID > 0
                 && loginData.MobileNo.isNotBlank()
                 && loginData.Password.isNotBlank()) {
+                return true
+            } else if(loginData.isGuest) {
                 return true
             }
         }
@@ -123,6 +125,25 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun guestLoginUser() {
+//        showLoading()
+        val loginModel = LoginModel(
+            UserID = 0,
+            Name = "Guest Login",
+            MobileNo = "GUEST_LOGIN",
+            Password = "GUEST_LOGIN",
+            EmailID = "GUEST_LOGIN",
+            IsPremium = false,
+            IsActive = true,
+            DisplayPicture = "",
+            CreatedOn = "",
+            FirebaseToken = "",
+            isGuest = true
+        )
+        setLoginToStorage(loginModel)
+        navigateToHomePage()
     }
 
     private fun setLoginToStorage(loginModel: LoginModel) {

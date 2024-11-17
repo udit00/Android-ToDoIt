@@ -114,7 +114,7 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
         modifier = Modifier
             .padding(vertical = 100.dp)
             .fillMaxWidth()
-            .fillMaxHeight(0.6f)
+            .fillMaxHeight(0.9f)
 //            .fillMaxSize()
         ,
         onDismissRequest = {
