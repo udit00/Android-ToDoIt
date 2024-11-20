@@ -6,6 +6,7 @@ import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
+import com.udit.todoit.ui.home.model.TodoView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -35,9 +36,13 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
         })
     }
 
-    suspend fun getTodosFromRoomDb(response: (listOfTodos: ArrayList<Todo>) -> Unit) {
-        roomDB.todoDao.getAllTodo().collectLatest {
-            var l: ArrayList<Todo> = ArrayList()
+    suspend fun getTodosFromRoomDb(response: (listOfTodos: ArrayList<TodoView>) -> Unit) {
+//        roomDB.todoDao.getAllTodo().collectLatest {
+//            var l: ArrayList<Todo> = ArrayList()
+//            response(it.toCollection(l))
+//        }
+        roomDB.todoDao.getAllTodoAsView().collectLatest {
+            var l: ArrayList<TodoView> = ArrayList()
             response(it.toCollection(l))
         }
     }

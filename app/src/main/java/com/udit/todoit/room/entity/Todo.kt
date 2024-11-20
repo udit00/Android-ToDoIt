@@ -24,7 +24,8 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "todo",
     foreignKeys = [
-        ForeignKey(entity = TodoType::class, onDelete = ForeignKey.CASCADE, parentColumns = ["typeId"], childColumns = ["todoTypeID"])
+        ForeignKey(entity = TodoType::class, onDelete = ForeignKey.CASCADE, parentColumns = ["typeId"], childColumns = ["todoTypeID"]),
+        ForeignKey(entity = TodoStatus::class, onDelete = ForeignKey.CASCADE, parentColumns = ["statusID"], childColumns = ["todoCompletionStatusID"])
     ]
 )
 data class Todo(
@@ -36,4 +37,5 @@ data class Todo(
     val createdOn: String,
     val target: String,
     val todoTypeID: Int,
+    val todoCompletionStatusID: Int
 )

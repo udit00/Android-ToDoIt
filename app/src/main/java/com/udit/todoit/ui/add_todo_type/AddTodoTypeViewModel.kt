@@ -19,16 +19,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddTodoTypeViewModel @Inject constructor(private val repository: AddTodoTypeRepository): BaseViewModel() {
+class AddTodoTypeViewModel @Inject constructor(private val repository: AddTodoTypeRepository) :
+    BaseViewModel() {
 
-    val todoTypeColorList: State<List<TodoTypeColorModel>> = mutableStateOf(listOf(
-        TodoTypeColorModel(color = Color.Red, isLight = false),
-        TodoTypeColorModel(color = Color.Cyan, isLight = true),
-        TodoTypeColorModel(color = Color.Green, isLight = true),
-        TodoTypeColorModel(color = Color.Blue, isLight = true),
-        TodoTypeColorModel(color = Color.Magenta, isLight =  false),
-        TodoTypeColorModel(color = Color.Yellow, isLight = true),
-    ))
+    val todoTypeColorList: State<List<TodoTypeColorModel>> = mutableStateOf(
+        listOf(
+            TodoTypeColorModel(color = Color.Red, isLight = false),
+            TodoTypeColorModel(color = Color.Cyan, isLight = true),
+            TodoTypeColorModel(color = Color.Green, isLight = true),
+            TodoTypeColorModel(color = Color.Blue, isLight = true),
+            TodoTypeColorModel(color = Color.Magenta, isLight = false),
+            TodoTypeColorModel(color = Color.Yellow, isLight = true),
+        )
+    )
 
     private val _todoTypeId: MutableStateFlow<Int> = MutableStateFlow(0)
     val todoTypeId get() = _todoTypeId.asStateFlow()
@@ -41,30 +44,50 @@ class AddTodoTypeViewModel @Inject constructor(private val repository: AddTodoTy
     val todoTypeTitle = mutableStateOf("")
     val selectedTodoTypeColor = mutableStateOf(defaultTodoTypeColor)
 
+    val isSaved = MutableSharedFlow<Boolean>()
+
+
     fun resetAlert() {
+        _todoTypeId.value = 0
         todoTypeTitle.value = ""
         selectedTodoTypeColor.value = defaultTodoTypeColor
     }
 
-    fun upsertTodoType(todoType: TodoType) {
+    fun upsertTodoType() {
+        if (todoTypeTitle.value.isBlank()) {
+            notifyUserAboutError("Title cannot be empty.")
+            return
+        } else if (selectedTodoTypeColor.value == defaultTodoTypeColor) {
+            notifyUserAboutError("Select a color.")
+            return
+        }
+        val todoType = TodoType(
+            typename = todoTypeTitle.value,
+            isLight = selectedTodoTypeColor.value.isLight,
+            color = selectedTodoTypeColor.value.color.value.toString(),
+            typeId = todoTypeId.value
+        )
         viewModelScope.launch {
-            repository.ifTodoTypeExists(todoType.typename.trim()).collectLatest { exists ->
-                if(exists) {
+            repository.ifTodoTypeExists(todoType.typename.trim(), { exists ->
+                if (exists) {
                     notifyUserAboutError("Todo Type Already Exists.")
                 } else {
-                    repository.upsertTodoType(todoType = todoType)
-                    hide()
+                    viewModelScope.launch {
+                        repository.upsertTodoType(todoType = todoType)
+                        hide()
+                        isSaved.emit(true)
+                    }
                 }
-            }
+            })
         }
     }
 
-    fun getTodoTypeDetails() {
+    private fun getTodoTypeDetails() {
         viewModelScope.launch {
             repository.getTodoTypeDetails(
                 todoTypeId = _todoTypeId.value
             ).collectLatest { todoType: TodoType? ->
-                if(todoType != null) {
+                if (todoType != null) {
                     Log.d("TODO_TYPE", todoType.toString())
                     todoTypeTitle.value = todoType.typename
                     selectedTodoTypeColor.value = TodoTypeColorModel(
@@ -78,19 +101,25 @@ class AddTodoTypeViewModel @Inject constructor(private val repository: AddTodoTy
 
     fun show(todoTypeId: Int = 0) {
         _todoTypeId.value = todoTypeId
+        if (todoTypeId != 0) {
+            getTodoTypeDetails()
+        }
         _showTodoType.value = true
     }
 
     fun hide() {
-        _todoTypeId.value = 0
+        resetAlert()
         _showTodoType.value = false
     }
 
     fun ifTodoTypeAlreadyExists(todoTypeName: String) {
         viewModelScope.launch {
-            repository.ifTodoTypeExists(todoTypeName).collectLatest { exists ->
-                notifyUserAboutError(exists.toString())
-            }
+//            repository.ifTodoTypeExists(todoTypeName).collectLatest { exists ->
+//                notifyUserAboutError(exists.toString())
+//            }
+            repository.ifTodoTypeExists(todoTypeName, { doesExists: Boolean ->
+
+            })
         }
     }
 }

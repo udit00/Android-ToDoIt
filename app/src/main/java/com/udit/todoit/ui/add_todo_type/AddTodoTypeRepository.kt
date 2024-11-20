@@ -16,8 +16,8 @@ class AddTodoTypeRepository @Inject constructor(private val roomDB: TodoDatabase
         roomDB.todoTypeDao.upsertTodoType(todoType)
     }
 
-    fun ifTodoTypeExists(typeName: String): Flow<Boolean> {
-        return roomDB.todoTypeDao.checkIfTodoTypeAlreadyExists(typeName)
+    suspend fun ifTodoTypeExists(typeName: String, exists: (doesExists: Boolean) -> Unit)  {
+        return exists(roomDB.todoTypeDao.checkIfTodoTypeAlreadyExists(typeName))
     }
 
     fun getTodoTypeDetails(todoTypeId: Int): Flow<TodoType?> {

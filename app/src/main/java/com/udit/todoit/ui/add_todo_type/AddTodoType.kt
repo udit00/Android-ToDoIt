@@ -85,30 +85,8 @@ fun AddTodoType(viewModel: AddTodoTypeViewModel) {
 //    }
 
     fun upsertTodoType() {
-        val typeName = enteredTypeByUser.trim()
-        val color = selectedColorByUser.color
-        val isLight = selectedColorByUser.isLight
-        if(typeName.isBlank()) {
-//            notifyUserAboutError("Type name cannot be empty.")
-            return
-        } else if(color.value == Color.Transparent.value) {
-//            notifyUserAboutError("Select a color for your type - ${typeName}.")
-            return
-        }
-        val todoType = TodoType(
-            typeId = todoTypeId,
-            typename = typeName,
-            color = color.value.toString(),
-            isLight = isLight
-        )
-        scope.launch(Dispatchers.IO) {
-            viewModel.upsertTodoType(todoType)
-//            closeAlert()
-        }
+        viewModel.upsertTodoType()
     }
-
-
-
 
     BasicAlertDialog (
         modifier = Modifier

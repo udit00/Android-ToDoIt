@@ -11,8 +11,11 @@ import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
+import com.udit.todoit.shared_preferences.StorageHelper
+import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -23,11 +26,18 @@ import javax.inject.Inject
 @HiltViewModel
 class UpsertTodoViewModel @Inject constructor(
     private val repository: UpsertTodoRepository,
+    private val storageHelper: StorageHelper,
     private val navigationProvider: NavigationProvider
 ): BaseViewModel() {
 
+    val todoTitleError = mutableStateOf(false)
     val todoTitle = mutableStateOf("")
+    val todoTitleMaxChar = 100
+
+    val todoDescriptionError = mutableStateOf(false)
     val todoDescription = mutableStateOf("")
+
+
     val selectedTodoType: MutableState<TodoType?> = mutableStateOf(null)
     private val _todoTypesList: MutableStateFlow<List<TodoType>> = MutableStateFlow(listOf())
     val todoTypesList get() = _todoTypesList
@@ -44,15 +54,33 @@ class UpsertTodoViewModel @Inject constructor(
 
     val isTodoTypeDropDownMenuExpanded = mutableStateOf(false)
 
+    private val _userData: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
+    val userData get() = _userData
+
     init {
+        viewModelScope.launch {
+            repository.errorFlow.collectLatest { errMsg ->
+                notifyUserAboutError(errMsg.toString())
+            }
+        }
+        getUserData()
+        getTypesList()
+    }
+
+    fun getTypesList() {
         viewModelScope.launch {
             repository.getTypesForList { listOfTodoTypes ->
                 _todoTypesList.value = listOfTodoTypes
-                if(listOfTodoTypes.isNotEmpty()) {
+                if (listOfTodoTypes.isNotEmpty()) {
                     selectedTodoType.value = listOfTodoTypes[0]
                 }
             }
         }
+    }
+
+    private fun getUserData() {
+        val loginData = storageHelper.getLoginData()
+        _userData.value = loginData
     }
 
 //    private fun validateAndSave(todoId: Int = 0) {
@@ -80,11 +108,49 @@ class UpsertTodoViewModel @Inject constructor(
 //        }
 //    }
 
-    private fun upsertTodo(todo: Todo) {
+    @OptIn(ExperimentalMaterial3Api::class)
+    fun upsertTodo() {
         viewModelScope.launch {
-            repository.upsertTodo(
-                todo = todo
+            if(todoTitle.value.isBlank()) {
+                notifyUserAboutError("Title cannot be empty.")
+                todoTitleError.value = true
+                return@launch
+            } else if(todoDescription.value.isBlank()) {
+                notifyUserAboutError("Description cannot be empty.")
+                return@launch
+            } else if(selectedTodoType.value == null) {
+                notifyUserAboutError("Select Todo Type.")
+                return@launch
+            } else if(targetDatePickerState.selectedDateMillis == null || targetDatePickerState.selectedDateMillis.toString().isBlank()) {
+                notifyUserAboutError("Select a Target Date.")
+                return@launch
+            } else if(userData.value == null) {
+                notifyUserAboutError("Something went wrong, please try again.")
+                return@launch
+            }
+            val todo = Todo(
+                title = todoTitle.value,
+                description = todoDescription.value,
+                todoTypeID = selectedTodoType.value!!.typeId,
+                todoID = 0,
+//                createdOn = LocalDateTime.now().toString(),
+                createdOn = System.currentTimeMillis().toString(),
+                target = targetDatePickerState.selectedDateMillis.toString(),
+                createId = userData.value!!.UserID,
+                todoCompletionStatusID = 1
             )
+            repository.ifTodoAlreadyExists(todo) { ifExists ->
+                if(ifExists) {
+                    notifyUserAboutError("Todo already exists.")
+                } else {
+                    viewModelScope.launch {
+                        repository.upsertTodo(
+                            todo = todo
+                        )
+                    }
+                    goBack()
+                }
+            }
         }
     }
 

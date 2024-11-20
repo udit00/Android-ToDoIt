@@ -43,6 +43,7 @@ class LoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+//            loginRepository.insertTodoStatusDefaults()
             loginRepository.errorFlow.collectLatest { errMsg ->
                 notifyUserAboutError(errMsg)
                 hideLoading()

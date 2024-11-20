@@ -17,8 +17,8 @@ object MyScreensModule {
 
     @Provides
     @ViewModelScoped
-    fun providesLoginRepository(api: Api): LoginRepository {
-        return LoginRepository(api)
+    fun providesLoginRepository(api: Api, db: TodoDatabase): LoginRepository {
+        return LoginRepository(api, db)
     }
 
     @Provides

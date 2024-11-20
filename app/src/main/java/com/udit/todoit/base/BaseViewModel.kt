@@ -19,8 +19,11 @@ import javax.inject.Inject
 @HiltViewModel
 open class BaseViewModel @Inject constructor(): ViewModel() {
 
-    protected val _errorMutableFlow = MutableSharedFlow<String?>()
-    val errorFlow get() = _errorMutableFlow.asSharedFlow()
+//    protected val _errorMutableFlow = MutableSharedFlow<String?>()
+//    val errorFlow get() = _errorMutableFlow.asSharedFlow()
+
+    protected val _errorMutableFlow = MutableSharedFlow<String>()
+    val errorFlow get() = _errorMutableFlow
 
     fun handleApiResponse(jsonObject: JSONObject): ApiPadhaiResponse? {
         var apiPadhaiResponse: ApiPadhaiResponse? = null
@@ -29,7 +32,8 @@ open class BaseViewModel @Inject constructor(): ViewModel() {
             apiPadhaiResponse = gson.fromJson(jsonObject.toString(), ApiPadhaiResponse::class.java)
         } catch (ex: Exception) {
             viewModelScope.launch {
-                _errorMutableFlow.emit(ex.message)
+//                _errorMutableFlow.emit(ex.message)
+                _errorMutableFlow.emit(ex.message.toString());
             }
         }
         return apiPadhaiResponse

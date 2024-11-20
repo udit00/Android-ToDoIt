@@ -24,13 +24,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -46,6 +50,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,6 +79,8 @@ import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
+import com.udit.todoit.ui.home.model.TodoView
+import com.udit.todoit.utils.Utils
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -88,6 +95,7 @@ fun HomeScreen(
     todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
     val todoTypeList = viewModel.todoTypes.collectAsStateWithLifecycle()
@@ -119,14 +127,22 @@ fun HomeScreen(
 //    }
 
     ModalNavigationDrawer(
+        drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(viewModel.userData.value?.Name ?: "Guest", modifier = Modifier.padding(16.dp))
+                Text(viewModel.userData.value?.Name?.let { "Dear, $it" } ?: "Guest", modifier = Modifier.padding(16.dp))
                 HorizontalDivider()
                 NavigationDrawerItem(
-                    label = { Text(text = "Drawer Item") },
+                    label = { Text(text = "Log Out") },
                     selected = false,
-                    onClick = { /*TODO*/ }
+                    icon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = null,
+                            tint = Color.Red
+                        )
+                    },
+                    onClick = { viewModel.logOut() }
                 )
                 // ...other drawer items
             }
@@ -138,6 +154,23 @@ fun HomeScreen(
                 TopAppBar(
                     title = {
                         Text("Home")
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            modifier = Modifier,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if(drawerState.isOpen) close() else open()
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Menu,
+                                contentDescription = null
+                            )
+                        }
                     },
                     modifier = Modifier
                 )
@@ -251,8 +284,9 @@ fun HomeScreen(
 
                     itemsIndexed(
                         items = todoList.value,
-                        key = { index: Int, item: Todo -> item.todoID }
+                        key = { index: Int, item: TodoView -> item.todoID }
                     ) { index, todoItem ->
+
                         TodoCard(todoItem)
                     }
                 }
@@ -277,7 +311,6 @@ fun HeaderTypeCard(
             .padding(10.dp)
             .combinedClickable(
                 onClick = {
-
                 },
                 onLongClick = {
                     editTodoType(typeItem)
@@ -333,7 +366,7 @@ fun HeaderTypeCard(
 //                        .padding(0.dp)
                     ,
                     onClick = {
-
+                        editTodoType(typeItem)
                     }
                 ) {
                     Icon(
@@ -398,7 +431,7 @@ fun HeaderTypeCard(
 }
 
 @Composable
-fun TodoCard(todoItem: Todo) {
+fun TodoCard(todoItem: TodoView) {
     Card(
         modifier = Modifier
 //                            .background(Color.Gray)
@@ -414,7 +447,22 @@ fun TodoCard(todoItem: Todo) {
                 text = todoItem.title,
             )
             Text(
+                text = todoItem.todoTypeName,
+            )
+            Text(
                 text = todoItem.description,
+                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+                modifier = Modifier.padding(start = 10.dp)
+
+            )
+            Text(
+                text = Utils.convertMillisToDate(todoItem.createdOn.toLong()),
+                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+                modifier = Modifier.padding(start = 10.dp)
+
+            )
+            Text(
+                text = Utils.convertMillisToDate(todoItem.target.toLong()),
                 fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
                 modifier = Modifier.padding(start = 10.dp)
 

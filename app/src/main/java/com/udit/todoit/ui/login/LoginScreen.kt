@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -83,6 +84,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                     Toast.makeText(context, it, Toast.LENGTH_LONG).show()
                 }
             }
+
         }
     }
 
@@ -103,7 +105,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .fillMaxHeight(0.5f)
+                    .fillMaxHeight(0.3f)
                     .fillMaxWidth()
                     .padding(20.dp)
                     .align(Alignment.CenterHorizontally)
@@ -175,7 +177,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 },
                 label = { Text(text = "Password") },
                 textStyle = TextStyle(brush = brush),
-                visualTransformation = if(viewModel.passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (viewModel.passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation(),
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Lock, contentDescription = "")
                 },
@@ -193,7 +195,15 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(40.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 //            GradientButton(
 //                text = "Login",
 //                gradient = buttonGradient,
@@ -209,24 +219,22 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 gradient = buttonGradient,
                 isLoading = isLoading.value,
                 modifier = Modifier
-                    .wrapContentWidth()
+//                    .wrapContentWidth()
+                    .fillMaxWidth()
                     .padding(70.dp, 19.dp),
                 onClick = {
                     viewModel.loginUser()
-//                    viewModel.toggleLoading()
                 })
-
-
-//            GradientButton(
-//                text = "Test",
-//                gradient = buttonGradient,
-//                modifier = Modifier
-//                    .wrapContentWidth()
-//                    .padding(70.dp, 12.dp),
-//                onClick = {
-//                    viewModel.testPref()
-//                })
-
+            GradientButtonWithLoader(
+                text = "Guest Login",
+                gradient = buttonGradient,
+                isLoading = isLoading.value,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(70.dp, 19.dp),
+                onClick = {
+                    viewModel.loginUser()
+                })
 
         }
     }

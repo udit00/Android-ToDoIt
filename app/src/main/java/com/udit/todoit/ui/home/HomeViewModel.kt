@@ -16,6 +16,7 @@ import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
+import com.udit.todoit.ui.home.model.TodoView
 import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,7 +42,7 @@ class HomeViewModel @Inject constructor(
 
     @Inject lateinit var roomDB: TodoDatabase
 
-    private val _todos: MutableStateFlow<ArrayList<Todo>> = MutableStateFlow(arrayListOf())
+    private val _todos: MutableStateFlow<ArrayList<TodoView>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
 
     private val _todoTypes: MutableStateFlow<List<TodoType>> = MutableStateFlow(arrayListOf())
@@ -77,34 +81,37 @@ class HomeViewModel @Inject constructor(
         _userData.value = loginData
     }
 
-    fun getTodos(searchValue: String? = "") {
-        val searchedString: String = if (searchValue.isNullOrBlank()) "" else searchValue
-        val params = mapOf(
-            "userId" to "1",
-            "charStr" to searchedString
-        )
-        viewModelScope.launch {
-            homeRepository.getTodos(params) { jsonObject: JSONObject ->
-                try {
-                    val apiResponse = handleApiResponse(jsonObject)
-                    if (apiResponse != null) {
-                        val typeToken = object : TypeToken<ArrayList<Todo>>() {}.type
-                        val todoList =
-                            Gson().fromJson<ArrayList<Todo>>(apiResponse.Response, typeToken)
-                        _todos.value = todoList
-                        Log.d(this@HomeViewModel.javaClass.simpleName, todoList.toString())
-                    }
-                } catch (ex: Exception) {
-                    notifyUserAboutError(ex.message)
-                }
-            }
-        }
-    }
+
+//    fun getTodos(searchValue: String? = "") {
+//        val searchedString: String = if (searchValue.isNullOrBlank()) "" else searchValue
+//        val params = mapOf(
+//            "userId" to "1",
+//            "charStr" to searchedString
+//        )
+//        viewModelScope.launch {
+//            homeRepository.getTodos(params) { jsonObject: JSONObject ->
+//                try {
+//                    val apiResponse = handleApiResponse(jsonObject)
+//                    if (apiResponse != null) {
+//                        val typeToken = object : TypeToken<ArrayList<Todo>>() {}.type
+//                        val todoList =
+//                            Gson().fromJson<ArrayList<Todo>>(apiResponse.Response, typeToken)
+//                        _todos.value = todoList
+//                        Log.d(this@HomeViewModel.javaClass.simpleName, todoList.toString())
+//                    }
+//                } catch (ex: Exception) {
+//                    notifyUserAboutError(ex.message)
+//                }
+//            }
+//        }
+//    }
 
     private fun getTodosFromRoomDB(searchValue: String? = "") {
         viewModelScope.launch {
             homeRepository.getTodosFromRoomDb { list ->
+//                _todos.value = list
                 _todos.value = list
+
             }
         }
     }
@@ -121,29 +128,45 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun insertTodo() {
-        viewModelScope.launch {
-//            if (_todoTypes.value.isEmpty()) {
-//                insertTodoType("Home")
-//                delay(100)
-//            }
-            val todo: Todo = Todo(
-                title = "Grocery",
-                description = "Get the Tomato",
-                todoTypeID = 1,
-                target = LocalDateTime.now().toString(),
-                createdOn = LocalDateTime.now().toString(),
-                createId = 1
-            )
-            homeRepository.upsertTodo(todo)
-        }
+    fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("EEE, MMM d HH:mm aaa", Locale.getDefault())
+        return formatter.format(Date(millis))
     }
+
+
+//    fun insertTodo() {
+//        viewModelScope.launch {
+////            if (_todoTypes.value.isEmpty()) {
+////                insertTodoType("Home")
+////                delay(100)
+////            }
+//            val todo: Todo = Todo(
+//                title = "Grocery",
+//                description = "Get the Tomato",
+//                todoTypeID = 1,
+//                target = LocalDateTime.now().toString(),
+//                createdOn = LocalDateTime.now().toString(),
+//                createId = 1
+//            )
+//            homeRepository.upsertTodo(todo)
+//        }
+//    }
 
     fun navigateToUpsertTodoScreen(todoId: Int? = -1) {
         navigationProvider.navController.navigate(Screen.UpsertTodoPage)
     }
 
 
+    fun logOut() {
+        val isRemoved = storageHelper.remove(StorageHelper.LOGIN_PREF_TAG)
+        if(isRemoved) {
+            navigationProvider.navController.navigate(Screen.LoginPage) {
+                popUpTo(0)
+            }
+        } else {
+            notifyUserAboutError("Something went wrong.")
+        }
+    }
 
 //    fun openAddTodoTypeAlert() {
 ////        val state by remember

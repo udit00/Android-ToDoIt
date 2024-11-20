@@ -2,6 +2,9 @@ package com.udit.todoit.utils
 
 import android.content.Context
 import android.widget.Toast
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object Utils {
 
@@ -23,6 +26,11 @@ object Utils {
 
     fun showToast(context: Context, msg: String) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+    }
+
+    fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("EEE, MMM d HH:mm aaa", Locale.getDefault())
+        return formatter.format(Date(millis))
     }
 
 }

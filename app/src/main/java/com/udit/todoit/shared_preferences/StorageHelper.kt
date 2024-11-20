@@ -33,13 +33,27 @@ class StorageHelper @Inject constructor(val myApp: MyApp) {
         return if (str.isNullOrBlank()) STORAGE_ERROR_TAG else str
     }
 
-    fun setString(key: String, value: String) {
+    fun setString(key: String, value: String): Boolean {
+        var isSaved = false
         try {
             editor.putString(key, value)
-            editor.apply()
+            isSaved = editor.commit()
         } catch (ex: Exception) {
             Log.e(this@StorageHelper.javaClass.simpleName, ex.message.toString())
+            isSaved = false
         }
+        return isSaved
+    }
+
+    fun remove(key: String): Boolean {
+        var isRemoved: Boolean = false
+        try {
+            editor.remove(key)
+            isRemoved = editor.commit()
+        } catch (ex: Exception) {
+            isRemoved = false;
+        }
+        return isRemoved
     }
 
     fun getLoginData(): LoginModel? {
