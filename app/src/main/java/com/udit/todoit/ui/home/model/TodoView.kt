@@ -10,8 +10,14 @@ data class TodoView(
     val createdOn: String,
     val target: String,
     val todoTypeID: Int,
-    val todoCompletionStatusID: Int,
-    val todoTypeName: String
+    var todoCompletionStatusID: Int,
+    val todoTypeName: String,
+    val todoTypeColor: String,
+    val todoTypeIsLight: Boolean,
+    val todoStatusName: String,
+    val todoStatusColor: String,
+    val todoStatusIsLight: Boolean
+
 ) {
 //    companion object {
 //        fun getTodoView(todo: Todo): TodoView {

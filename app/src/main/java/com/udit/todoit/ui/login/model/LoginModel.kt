@@ -11,5 +11,5 @@ data class LoginModel(
     val MobileNo: String,
     val IsActive: Boolean,
     val IsPremium: Boolean,
-    val isGuest: Boolean = false
+//    val isGuest: Boolean = false
 )

@@ -5,6 +5,7 @@ import com.udit.todoit.api.Api
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
+import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.home.model.TodoView
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,15 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
             response(it)
         }
     }
+
+    suspend fun getAllTodoStatusFromRoomDb(response: (listOfTodoStatus: List<TodoStatus>) -> Unit) {
+//        roomDB.todoStatusDao.getAllTodoStatus().collectLatest {
+//            response(it)
+//        }
+        response(roomDB.todoStatusDao.getAllTodoStatus())
+    }
+
+
 
     suspend fun upsertTodo(todo: Todo) {
         roomDB.todoDao.upsertTodo(todo)

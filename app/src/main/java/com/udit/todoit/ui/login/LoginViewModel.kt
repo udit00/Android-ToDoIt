@@ -80,8 +80,8 @@ class LoginViewModel @Inject constructor(
                 && loginData.MobileNo.isNotBlank()
                 && loginData.Password.isNotBlank()) {
                 return true
-            } else if(loginData.isGuest) {
-                return true
+//            } else if(loginData.isGuest) {
+//                return true
             }
         }
         return false
@@ -128,24 +128,24 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun guestLoginUser() {
-//        showLoading()
-        val loginModel = LoginModel(
-            UserID = 0,
-            Name = "Guest Login",
-            MobileNo = "GUEST_LOGIN",
-            Password = "GUEST_LOGIN",
-            EmailID = "GUEST_LOGIN",
-            IsPremium = false,
-            IsActive = true,
-            DisplayPicture = "",
-            CreatedOn = "",
-            FirebaseToken = "",
-            isGuest = true
-        )
-        setLoginToStorage(loginModel)
-        navigateToHomePage()
-    }
+//    fun guestLoginUser() {
+////        showLoading()
+//        val loginModel = LoginModel(
+//            UserID = 0,
+//            Name = "Guest Login",
+//            MobileNo = "GUEST_LOGIN",
+//            Password = "GUEST_LOGIN",
+//            EmailID = "GUEST_LOGIN",
+//            IsPremium = false,
+//            IsActive = true,
+//            DisplayPicture = "",
+//            CreatedOn = "",
+//            FirebaseToken = "",
+//            isGuest = true
+//        )
+//        setLoginToStorage(loginModel)
+//        navigateToHomePage()
+//    }
 
     private fun setLoginToStorage(loginModel: LoginModel) {
         val gson = Gson()

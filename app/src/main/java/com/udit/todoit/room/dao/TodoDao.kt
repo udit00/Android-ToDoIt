@@ -21,7 +21,12 @@ interface TodoDao {
     @Query("SELECT * FROM todo")
     fun getAllTodo(): Flow<List<Todo>>
 
-    @Query("SELECT t.*, tt.typename as todoTypeName FROM todo t inner join todotype tt on tt.typeId = t.todoTypeID")
+    @Query("SELECT t.*, " +
+            "tt.typename as todoTypeName, tt.color as todoTypeColor, tt.isLight as todoTypeIsLight, " +
+            "ts.statusName as todoStatusName, ts.statusColor as todoStatusColor, ts.isColorLight as todoStatusIsLight " +
+            "FROM todo t " +
+            "inner join todotype tt on tt.typeId = t.todoTypeID " +
+            "inner join todostatus ts on ts.statusID = t.todoCompletionStatusID ")
     fun getAllTodoAsView(): Flow<List<TodoView>>
 
     @Query("SELECT EXISTS(select * from todo where title = :title and description = :description)")

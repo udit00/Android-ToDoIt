@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.udit.todoit.ui.login.LoginScreen
 import com.udit.todoit.entry_point.main_activity.navigation.Screen
 import com.udit.todoit.entry_point.main_activity.ui.theme.ToDoItTheme
+import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.TodoStatus
@@ -56,12 +57,18 @@ class MainActivity @Inject constructor() : ComponentActivity() {
                         val todoStatus: List<TodoStatus> = listOf(
                             TodoStatus(
                                 statusName = "Pending",
+                                statusColor = TodoStatusColors.colorPending.value.toString(),
+                                isColorLight = true
                             ),
                             TodoStatus(
-                                statusName = "Completed"
+                                statusName = "Completed",
+                                statusColor = TodoStatusColors.colorCompleted.value.toString(),
+                                isColorLight = false
                             ),
                             TodoStatus(
-                                statusName = "Later"
+                                statusName = "Later",
+                                statusColor = TodoStatusColors.colorLater.value.toString(),
+                                isColorLight = false
                             )
                         )
                         todoDatabase.todoStatusDao.upsertTodoStatus(todoStatus)

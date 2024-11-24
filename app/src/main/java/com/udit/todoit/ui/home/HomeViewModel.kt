@@ -12,6 +12,7 @@ import com.udit.todoit.entry_point.main_activity.navigation.Screen
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
+import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
 import com.udit.todoit.ui.add_todo_type.AddTodoType
@@ -33,6 +34,12 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
+enum class FILTERBY {
+    PENDING,
+    COMPLETED,
+    LATER
+}
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
@@ -48,11 +55,17 @@ class HomeViewModel @Inject constructor(
     private val _todoTypes: MutableStateFlow<List<TodoType>> = MutableStateFlow(arrayListOf())
     val todoTypes get() = _todoTypes.asStateFlow()
 
+    private val _todoStatusList: MutableStateFlow<List<TodoStatus>> = MutableStateFlow(arrayListOf())
+    val todoStatusList get() = _todoStatusList
+
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
 
     private val _userData: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
     val userData get() = _userData
+
+    private val _filterBy: MutableStateFlow<FILTERBY> = MutableStateFlow(FILTERBY.PENDING)
+    val filterBy get() = _filterBy
 
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
@@ -62,7 +75,9 @@ class HomeViewModel @Inject constructor(
         _showAddTodoTypeAlert.value = false
     }
 
-
+    fun changeFilter(filterBy: FILTERBY) {
+        _filterBy.value = filterBy
+    }
 
     init {
         viewModelScope.launch {
@@ -74,6 +89,7 @@ class HomeViewModel @Inject constructor(
         getUserData()
         getTodoTypesFromRoomDb()
         getTodosFromRoomDB()
+        getTodoStatusFromRoomDb()
     }
 
     private fun getUserData() {
@@ -116,7 +132,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getTodoTypesFromRoomDb() {
+    private fun getTodoTypesFromRoomDb() {
         viewModelScope.launch {
             homeRepository.getTodoTypesFromRoomDb {
 //                _todoTypes.value = it
@@ -124,6 +140,14 @@ class HomeViewModel @Inject constructor(
                 //
                 _todoTypes.value = types
 //                types.add()
+            }
+        }
+    }
+
+    private fun getTodoStatusFromRoomDb() {
+        viewModelScope.launch {
+            homeRepository.getAllTodoStatusFromRoomDb {
+                _todoStatusList.value = it
             }
         }
     }
@@ -151,6 +175,22 @@ class HomeViewModel @Inject constructor(
 //            homeRepository.upsertTodo(todo)
 //        }
 //    }
+
+    fun updateTodo(todoView: TodoView) {
+        val todo = Todo(
+            todoID = todoView.todoID,
+            title = todoView.title,
+            description = todoView.description,
+            target = todoView.target,
+            createdOn = todoView.createdOn,
+            todoTypeID = todoView.todoTypeID,
+            createId = todoView.createId,
+            todoCompletionStatusID = todoView.todoCompletionStatusID
+        )
+        viewModelScope.launch {
+            homeRepository.upsertTodo(todo)
+        }
+    }
 
     fun navigateToUpsertTodoScreen(todoId: Int? = -1) {
         navigationProvider.navController.navigate(Screen.UpsertTodoPage)

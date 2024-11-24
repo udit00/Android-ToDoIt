@@ -17,4 +17,7 @@ interface TodoStatusDao {
 
     @Query("Select count(*) from todostatus")
     fun getCountOfStatus(): Flow<Int>
+
+    @Query("Select * from todostatus")
+    suspend fun getAllTodoStatus(): List<TodoStatus>
 }

@@ -3,6 +3,10 @@ package com.udit.todoit.ui.home
 import android.R
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -35,7 +39,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -43,10 +50,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
@@ -67,13 +77,22 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.room.entity.Todo
+import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
@@ -85,6 +104,7 @@ import com.udit.todoit.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -99,12 +119,18 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
     val todoTypeList = viewModel.todoTypes.collectAsStateWithLifecycle()
+    val todoStatusList = viewModel.todoStatusList.collectAsStateWithLifecycle()
+
+    val filterBy = viewModel.filterBy.collectAsStateWithLifecycle()
+
     val progressTemporary by remember { mutableStateOf(0.6f) }
 
     val showAddTodoTypeAlert = todoTypeViewModel.showTodoType.collectAsStateWithLifecycle()
     val colorRed = Color.Red
 
     viewModel.logger(colorRed.toString())
+
+    Log.d("STATUS_LIST", todoStatusList.value.toString())
 
     LaunchedEffect(key1 = "") {
         scope.launch(Dispatchers.Main) {
@@ -130,7 +156,8 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(viewModel.userData.value?.Name?.let { "Dear, $it" } ?: "Guest", modifier = Modifier.padding(16.dp))
+                Text(viewModel.userData.value?.Name?.let { "Dear, $it" } ?: "Guest",
+                    modifier = Modifier.padding(16.dp))
                 HorizontalDivider()
                 NavigationDrawerItem(
                     label = { Text(text = "Log Out") },
@@ -161,7 +188,7 @@ fun HomeScreen(
                             onClick = {
                                 scope.launch {
                                     drawerState.apply {
-                                        if(drawerState.isOpen) close() else open()
+                                        if (drawerState.isOpen) close() else open()
                                     }
                                 }
                             }
@@ -269,6 +296,114 @@ fun HomeScreen(
 
 
                 }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        modifier = Modifier,
+                        colors = SelectableChipColors(
+                            containerColor = animateColorAsState(
+                                targetValue = Color.Black,
+                                label = "",
+                                animationSpec = tween(
+                                    durationMillis = 2000,
+                                    delayMillis = 2000,
+                                    easing = EaseIn
+                                )
+                            ).value,
+                            leadingIconColor = Color.Transparent,
+                            trailingIconColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            disabledLeadingIconColor = Color.Transparent,
+                            disabledTrailingIconColor = Color.Transparent,
+                            labelColor = TodoStatusColors.colorPending,
+                            selectedLabelColor = Color.White,
+                            selectedLeadingIconColor = Color.Transparent,
+                            selectedContainerColor = Color.Gray,
+                            disabledSelectedContainerColor = Color.Transparent,
+                            disabledLabelColor = Color.Transparent,
+                            selectedTrailingIconColor = Color.Transparent
+
+                        ),
+                        onClick = {
+                            viewModel.changeFilter(FILTERBY.PENDING)
+                        },
+                        selected = filterBy.value == FILTERBY.PENDING,
+                        label = {
+                            Text("Pending")
+                        }
+                    )
+                    FilterChip(
+                        modifier = Modifier,
+                        colors = SelectableChipColors(
+                            containerColor = animateColorAsState(
+                                targetValue = Color.Black,
+                                label = "",
+                                animationSpec = tween(
+                                    durationMillis = 2000,
+                                    delayMillis = 2000,
+                                    easing = EaseIn
+                                )
+                            ).value,
+                            leadingIconColor = Color.Transparent,
+                            trailingIconColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            disabledLeadingIconColor = Color.Transparent,
+                            disabledTrailingIconColor = Color.Transparent,
+                            labelColor = TodoStatusColors.colorCompleted,
+                            selectedLabelColor = Color.White,
+                            selectedLeadingIconColor = Color.Transparent,
+                            selectedContainerColor = Color.Gray,
+                            disabledSelectedContainerColor = Color.Transparent,
+                            disabledLabelColor = Color.Transparent,
+                            selectedTrailingIconColor = Color.Transparent
+
+                        ),
+                        onClick = {
+                            viewModel.changeFilter(FILTERBY.COMPLETED)
+                        },
+                        selected = filterBy.value == FILTERBY.COMPLETED,
+                        label = {
+                            Text("Completed")
+                        }
+                    )
+                    FilterChip(
+                        modifier = Modifier,
+                        colors = SelectableChipColors(
+                            containerColor = animateColorAsState(
+                                targetValue = Color.Black,
+                                label = "",
+                                animationSpec = tween(
+                                    durationMillis = 2000,
+                                    delayMillis = 2000,
+                                    easing = EaseIn
+                                )
+                            ).value,
+                            leadingIconColor = Color.Transparent,
+                            trailingIconColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            disabledLeadingIconColor = Color.Transparent,
+                            disabledTrailingIconColor = Color.Transparent,
+                            disabledSelectedContainerColor = Color.Transparent,
+                            disabledLabelColor = Color.Transparent,
+                            labelColor = TodoStatusColors.colorLater,
+                            selectedLabelColor = Color.White,
+                            selectedLeadingIconColor = Color.Transparent,
+                            selectedContainerColor = TodoStatusColors.colorLater,
+                            selectedTrailingIconColor = Color.Transparent
+                        ),
+                        onClick = {
+                            viewModel.changeFilter(FILTERBY.LATER)
+                        },
+                        selected = filterBy.value == FILTERBY.LATER,
+                        label = {
+                            Text("Later")
+                        }
+                    )
+                }
 //            HorizontalDivider(
 //                thickness = 2.dp,
 //                color = Color.Black,
@@ -287,7 +422,7 @@ fun HomeScreen(
                         key = { index: Int, item: TodoView -> item.todoID }
                     ) { index, todoItem ->
 
-                        TodoCard(todoItem)
+                        TodoCard(todoItem, todoStatusList.value, viewModel)
                     }
                 }
 
@@ -431,71 +566,172 @@ fun HeaderTypeCard(
 }
 
 @Composable
-fun TodoCard(todoItem: TodoView) {
-    Card(
-        modifier = Modifier
-//                            .background(Color.Gray)
-            .fillMaxWidth()
-            .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
-    ) {
-
-        Column(
-            modifier = Modifier.padding(10.dp)
-        ) {
-
-            Text(
-                text = todoItem.title,
-            )
-            Text(
-                text = todoItem.todoTypeName,
-            )
-            Text(
-                text = todoItem.description,
-                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-                modifier = Modifier.padding(start = 10.dp)
-
-            )
-            Text(
-                text = Utils.convertMillisToDate(todoItem.createdOn.toLong()),
-                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-                modifier = Modifier.padding(start = 10.dp)
-
-            )
-            Text(
-                text = Utils.convertMillisToDate(todoItem.target.toLong()),
-                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-                modifier = Modifier.padding(start = 10.dp)
-
-            )
-        }
-
+fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: HomeViewModel) {
+    val popupVisible = remember {
+        mutableStateOf(false)
     }
+    ListItem(
+        modifier = Modifier.padding(vertical = 2.dp, horizontal = 0.dp),
+        headlineContent = {
+            Text(todoItem.title)
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.End
-    ) {
-        IconButton(
-            modifier = Modifier
-                .padding(end = 20.dp)
-                .offset(x = 0.dp, y = -20.dp),
-            onClick = {
+        },
+        supportingContent = {
+//            Text(todoItem.todoTypeName)
+            Text(todoItem.description)
 
+        },
+        leadingContent = {
+            Text(
+                color = Color(value = todoItem.todoTypeColor.toULong()),
+                text = todoItem.todoTypeName
+            )
+        },
+        trailingContent = {
+            Column {
+
+                Card(
+                    modifier = Modifier,
+                    border = BorderStroke(
+                        width = 2.dp,
+                        color = Color(value = todoItem.todoStatusColor.toULong())
+                    ),
+                    onClick = {
+                        popupVisible.value = true
+                    }
+                ) {
+                    Text(
+                        modifier = Modifier.padding(10.dp),
+                        text = todoItem.todoStatusName
+                    )
+                }
+                if (popupVisible.value) {
+                    DropdownMenu(
+                        modifier = Modifier,
+                        expanded = popupVisible.value,
+                        onDismissRequest = {
+                            popupVisible.value = false
+                        }
+                    ) {
+                        todoStatusList.forEachIndexed { index, todoStatus ->
+                            DropdownMenuItem(
+                                modifier = Modifier.background(Color(value = todoStatus.statusColor.toULong())),
+                                text = { Text(todoStatus.statusName) },
+                                colors = MenuItemColors(
+
+//                                    textColor = if (todoStatus.isColorLight) {
+//                                        animateColorAsState(
+//                                            targetValue = Color.Black,
+//                                            animationSpec = tween(
+//                                                delayMillis = 2000,
+//                                                easing = EaseIn,
+//                                                durationMillis = 2000
+//                                            )
+//                                        ).value
+//                                    } else {
+//                                        animateColorAsState(
+//                                            targetValue = Color.White,
+//                                            animationSpec = tween(
+//                                                delayMillis = 2000,
+//                                                easing = EaseIn,
+//                                                durationMillis = 2000
+//                                            )
+//                                        ).value
+//                                    },
+                                    textColor = if(todoStatus.isColorLight) {
+                                        Color.Black
+                                    } else {
+                                        Color.White
+                                    },
+                                    leadingIconColor = Color.Transparent,
+                                    trailingIconColor = Color.Transparent,
+                                    disabledTextColor = Color.Red,
+                                    disabledLeadingIconColor = Color.Red,
+                                    disabledTrailingIconColor = Color.Red
+                                ),
+                                onClick = {
+                                    popupVisible.value = false
+                                    todoItem.todoCompletionStatusID = todoStatus.statusID
+                                    viewModel.updateTodo(todoItem)
+                                }
+                            )
+                        }
+                    }
+                }
             }
-        ) {
-            Icon(
-                imageVector = Icons.Default.Done,
-                contentDescription = "add",
-                modifier = Modifier
-                    .drawBehind {
-                        drawCircle(
-                            color = Color.Green,
-                            radius = this.size.maxDimension
-                        )
-                    },
-            )
+
+
         }
-    }
+
+    )
 
 }
+//@Composable
+//fun TodoCard(todoItem: TodoView) {
+//    Card(
+//        modifier = Modifier
+////                            .background(Color.Gray)
+//            .fillMaxWidth()
+//            .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
+//    ) {
+//
+//        Column(
+//            modifier = Modifier.padding(10.dp)
+//        ) {
+//
+//            Text(
+//                text = todoItem.title,
+//            )
+//            Text(
+//                text = todoItem.todoTypeName,
+//            )
+//            Text(
+//                text = todoItem.description,
+//                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+//                modifier = Modifier.padding(start = 10.dp)
+//
+//            )
+//            Text(
+//                text = Utils.convertMillisToDate(todoItem.createdOn.toLong()),
+//                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+//                modifier = Modifier.padding(start = 10.dp)
+//
+//            )
+//            Text(
+//                text = Utils.convertMillisToDate(todoItem.target.toLong()),
+//                fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+//                modifier = Modifier.padding(start = 10.dp)
+//
+//            )
+//        }
+//
+//    }
+//
+//    Row(
+//        modifier = Modifier.fillMaxWidth(),
+//        verticalAlignment = Alignment.Top,
+//        horizontalArrangement = Arrangement.End
+//    ) {
+//        IconButton(
+//            modifier = Modifier
+//                .padding(end = 20.dp)
+//                .offset(x = 0.dp, y = -20.dp),
+//            onClick = {
+//
+//            }
+//        ) {
+//            Icon(
+//                imageVector = Icons.Default.Done,
+//                contentDescription = "add",
+//                modifier = Modifier
+//                    .drawBehind {
+//                        drawCircle(
+//                            color = Color.Green,
+//                            radius = this.size.maxDimension
+//                        )
+//                    },
+//            )
+//        }
+//    }
+//
+//}

@@ -225,16 +225,16 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 onClick = {
                     viewModel.loginUser()
                 })
-            GradientButtonWithLoader(
-                text = "Guest Login",
-                gradient = buttonGradient,
-                isLoading = isLoading.value,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(70.dp, 19.dp),
-                onClick = {
-                    viewModel.loginUser()
-                })
+//            GradientButtonWithLoader(
+//                text = "Guest Login",
+//                gradient = buttonGradient,
+//                isLoading = isLoading.value,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(70.dp, 19.dp),
+//                onClick = {
+//                    viewModel.loginUser()
+//                })
 
         }
     }
