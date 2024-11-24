@@ -1,43 +1,38 @@
 package com.udit.todoit.ui.home
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.entry_point.main_activity.navigation.Screen
+import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
-import com.udit.todoit.ui.add_todo_type.AddTodoType
-import com.udit.todoit.ui.add_todo_type.models.TodoTypeColorModel
 import com.udit.todoit.ui.home.model.TodoView
 import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-enum class FILTERBY {
-    PENDING,
-    COMPLETED,
-    LATER
+//enum class FILTERBY {
+//    PENDING,
+//    COMPLETED,
+//    LATER
+//}
+
+sealed class FilterBy(val name: String, val color: Color, val isLight: Boolean) {
+    data object PENDING: FilterBy("Pending", color = TodoStatusColors.colorPending, true)
+    data object COMPLETED: FilterBy("Completed", color = TodoStatusColors.colorCompleted, false)
+    data object Later: FilterBy("Later", color = TodoStatusColors.colorLater, false)
 }
 
 @HiltViewModel
@@ -64,8 +59,11 @@ class HomeViewModel @Inject constructor(
     private val _userData: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
     val userData get() = _userData
 
-    private val _filterBy: MutableStateFlow<FILTERBY> = MutableStateFlow(FILTERBY.PENDING)
-    val filterBy get() = _filterBy
+//    private val _filterByList: MutableStateFlow<List<FilterBy>> = MutableStateFlow(listOf())
+//    val filterByList get() = _filterByList
+
+    private val _selectedFilterBy: MutableStateFlow<FilterBy> = MutableStateFlow(FilterBy.PENDING)
+    val selectedFilterBy get() = _selectedFilterBy
 
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
@@ -75,8 +73,8 @@ class HomeViewModel @Inject constructor(
         _showAddTodoTypeAlert.value = false
     }
 
-    fun changeFilter(filterBy: FILTERBY) {
-        _filterBy.value = filterBy
+    fun changeFilter(filterBy: FilterBy) {
+        _selectedFilterBy.value = filterBy
     }
 
     init {
