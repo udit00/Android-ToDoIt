@@ -1,6 +1,11 @@
 package com.udit.todoit.ui.home
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewModelScope
 import com.udit.todoit.base.BaseViewModel
 import com.udit.todoit.entry_point.main_activity.navigation.Screen
@@ -29,10 +34,10 @@ import javax.inject.Inject
 //    LATER
 //}
 
-sealed class FilterBy(val name: String, val color: Color, val isLight: Boolean) {
-    data object PENDING: FilterBy("Pending", color = TodoStatusColors.colorPending, true)
-    data object COMPLETED: FilterBy("Completed", color = TodoStatusColors.colorCompleted, false)
-    data object Later: FilterBy("Later", color = TodoStatusColors.colorLater, false)
+sealed class FilterBy(val name: String, val icon: ImageVector, val color: Color, val isLight: Boolean) {
+    data object PENDING: FilterBy(name = "Pending", icon = Icons.Filled.DateRange, color = TodoStatusColors.colorPending, isLight = true)
+    data object COMPLETED: FilterBy(name = "Completed", icon = Icons.Filled.CheckCircle, color = TodoStatusColors.colorCompleted, isLight = false)
+    data object LATER: FilterBy(name = "Later", icon = Icons.Outlined.Lock, color = TodoStatusColors.colorLater, isLight = false)
 }
 
 @HiltViewModel
@@ -51,19 +56,19 @@ class HomeViewModel @Inject constructor(
     val todoTypes get() = _todoTypes.asStateFlow()
 
     private val _todoStatusList: MutableStateFlow<List<TodoStatus>> = MutableStateFlow(arrayListOf())
-    val todoStatusList get() = _todoStatusList
+    val todoStatusList get() = _todoStatusList.asStateFlow()
 
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val showAddTodoTypeAlert get() = _showAddTodoTypeAlert
+    val showAddTodoTypeAlert get() = _showAddTodoTypeAlert.asStateFlow()
 
     private val _userData: MutableStateFlow<LoginModel?> = MutableStateFlow(null)
-    val userData get() = _userData
+    val userData get() = _userData.asStateFlow()
 
-//    private val _filterByList: MutableStateFlow<List<FilterBy>> = MutableStateFlow(listOf())
-//    val filterByList get() = _filterByList
+    private val _filterByList: MutableStateFlow<List<FilterBy>> = MutableStateFlow(listOf())
+    val filterByList get() = _filterByList.asStateFlow()
 
     private val _selectedFilterBy: MutableStateFlow<FilterBy> = MutableStateFlow(FilterBy.PENDING)
-    val selectedFilterBy get() = _selectedFilterBy
+    val selectedFilterBy get() = _selectedFilterBy.asStateFlow()
 
     fun showAddTodoTypeAlert() {
         _showAddTodoTypeAlert.value = true
@@ -84,10 +89,23 @@ class HomeViewModel @Inject constructor(
 //                hideLoading()
             }
         }
+        getFilterByList()
         getUserData()
         getTodoTypesFromRoomDb()
         getTodosFromRoomDB()
         getTodoStatusFromRoomDb()
+    }
+
+    private fun getFilterByList() {
+        var filterByTempList: List<FilterBy> = listOf(
+            FilterBy.PENDING,
+            FilterBy.COMPLETED,
+            FilterBy.LATER
+        )
+//        repeat(3) {
+//            filterBy = FilterBy.PENDING
+//        }
+        _filterByList.value = filterByTempList
     }
 
     private fun getUserData() {

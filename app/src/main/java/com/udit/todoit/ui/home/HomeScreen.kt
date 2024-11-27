@@ -92,7 +92,8 @@ fun HomeScreen(
     val todoTypeList = viewModel.todoTypes.collectAsStateWithLifecycle()
     val todoStatusList = viewModel.todoStatusList.collectAsStateWithLifecycle()
 
-    val filterBy = viewModel.selectedFilterBy.collectAsStateWithLifecycle()
+    val selectedFilterBy = viewModel.selectedFilterBy.collectAsStateWithLifecycle()
+    val filterByList = viewModel.filterByList.collectAsStateWithLifecycle()
 
     val progressTemporary by remember { mutableStateOf(0.6f) }
 
@@ -273,39 +274,61 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    FilterChip(
-                        modifier = Modifier,
-                        colors = SelectableChipColors(
-                            containerColor = animateColorAsState(
-                                targetValue = Color.Black,
-                                label = "",
-                                animationSpec = tween(
-                                    durationMillis = 2000,
-                                    delayMillis = 2000,
-                                    easing = EaseIn
-                                )
-                            ).value,
-                            leadingIconColor = Color.Transparent,
-                            trailingIconColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            disabledLeadingIconColor = Color.Transparent,
-                            disabledTrailingIconColor = Color.Transparent,
-                            disabledSelectedContainerColor = Color.Transparent,
-                            disabledLabelColor = Color.Transparent,
-                            labelColor = TodoStatusColors.colorLater,
-                            selectedLabelColor = Color.White,
-                            selectedLeadingIconColor = Color.Transparent,
-                            selectedContainerColor = TodoStatusColors.colorLater,
-                            selectedTrailingIconColor = Color.Transparent
-                        ),
-                        onClick = {
-                            viewModel.changeFilter(FilterBy.Later)
-                        },
-                        selected = filterBy.value == FilterBy.Later,
-                        label = {
-                            Text("Later")
-                        }
-                    )
+                    filterByList.value.forEachIndexed { index, filter ->
+                        val isSelected = selectedFilterBy.value == filter
+                        FilterChip(
+                            modifier = Modifier,
+                            leadingIcon = {
+                                Icon(imageVector = filter.icon, contentDescription = "")
+                            },
+                            border = BorderStroke(
+                                color = if(isSelected) animateColorAsState(
+                                    targetValue = Color.Black,
+                                    label = "",
+                                    animationSpec = tween(
+                                        durationMillis = 2000,
+                                        delayMillis = 2000,
+                                        easing = EaseIn
+                                    )
+                                ).value
+                                else
+//                                Color.Transparent,
+                                filter.color,
+                                width = if(isSelected) 1.dp else 2.dp,
+
+                            ),
+                            colors = SelectableChipColors(
+                                containerColor = animateColorAsState(
+                                    targetValue = Color.LightGray,
+                                    label = "",
+                                    animationSpec = tween(
+                                        durationMillis = 2000,
+                                        delayMillis = 2000,
+                                        easing = EaseIn
+                                    )
+                                ).value,
+                                leadingIconColor = filter.color,
+                                trailingIconColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                disabledLeadingIconColor = Color.Transparent,
+                                disabledTrailingIconColor = Color.Transparent,
+                                disabledSelectedContainerColor = Color.Transparent,
+                                disabledLabelColor = Color.Transparent,
+                                labelColor = filter.color,
+                                selectedLabelColor = if(filter.isLight) Color.Black else Color.White,
+                                selectedLeadingIconColor = Color.Black,
+                                selectedContainerColor = filter.color,
+                                selectedTrailingIconColor = Color.Transparent
+                            ),
+                            onClick = {
+                                viewModel.changeFilter(filter)
+                            },
+                            selected = selectedFilterBy.value == filter,
+                            label = {
+                                Text(filter.name)
+                            }
+                        )
+                    }
                 }
 //            HorizontalDivider(
 //                thickness = 2.dp,
@@ -541,7 +564,7 @@ fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: Ho
 //                                            )
 //                                        ).value
 //                                    },
-                                    textColor = if(todoStatus.isColorLight) {
+                                    textColor = if (todoStatus.isColorLight) {
                                         Color.Black
                                     } else {
                                         Color.White
