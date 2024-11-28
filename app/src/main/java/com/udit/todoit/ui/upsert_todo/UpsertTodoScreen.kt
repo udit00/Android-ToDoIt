@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -59,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 import kotlinx.coroutines.flow.collectLatest
+import java.time.format.DateTimeFormatter
 import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -329,8 +331,11 @@ fun UpsertTodoScreen(
                     ) {
                         DatePicker(
                             state = viewModel.targetDatePickerState,
-                            showModeToggle = false                            
+                            showModeToggle = false
                         )
+//                        TimePicker(
+//                            state = viewModel.
+//                        )
                     }
                 }
             }

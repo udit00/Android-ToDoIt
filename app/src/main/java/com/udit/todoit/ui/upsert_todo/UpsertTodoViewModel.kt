@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.upsert_todo
 
+import android.util.Log
 import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,12 +14,14 @@ import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
 import com.udit.todoit.ui.login.model.LoginModel
+import com.udit.todoit.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -45,7 +48,8 @@ class UpsertTodoViewModel @Inject constructor(
     val showDatePicker = mutableStateOf(false)
     @OptIn(ExperimentalMaterial3Api::class)
     val targetDatePickerState = DatePickerState(
-        locale = Locale.getDefault()
+        locale = Locale.getDefault(),
+        initialSelectedDateMillis = System.currentTimeMillis()
     )
 //    @OptIn(ExperimentalMaterial3Api::class)
 //    val targetDate = mutableStateOf(
@@ -128,14 +132,17 @@ class UpsertTodoViewModel @Inject constructor(
                 notifyUserAboutError("Something went wrong, please try again.")
                 return@launch
             }
+            val createdOnDateTime: String = Utils.getCurrentDateTime().toString()
+            val targetDateTime: String = Utils.getDateTimeStringFromLong(targetDatePickerState.selectedDateMillis!!).toString()
+            logger(createdOnDateTime)
+            logger(targetDateTime)
             val todo = Todo(
                 title = todoTitle.value,
                 description = todoDescription.value,
                 todoTypeID = selectedTodoType.value!!.typeId,
                 todoID = 0,
-//                createdOn = LocalDateTime.now().toString(),
-                createdOn = System.currentTimeMillis().toString(),
-                target = targetDatePickerState.selectedDateMillis.toString(),
+                createdOn = createdOnDateTime,
+                target = targetDateTime,
                 createId = userData.value!!.UserID,
                 todoCompletionStatusID = 1
             )

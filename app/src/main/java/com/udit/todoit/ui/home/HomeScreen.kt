@@ -74,6 +74,7 @@ import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
 import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
 import com.udit.todoit.ui.home.model.TodoView
+import com.udit.todoit.utils.Utils
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -89,8 +90,12 @@ fun HomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val todoList = viewModel.todos.collectAsStateWithLifecycle()
+
+    val selectedTodoType = viewModel.selectedTodoType.collectAsStateWithLifecycle()
     val todoTypeList = viewModel.todoTypes.collectAsStateWithLifecycle()
+
     val todoStatusList = viewModel.todoStatusList.collectAsStateWithLifecycle()
+
 
     val selectedFilterBy = viewModel.selectedFilterBy.collectAsStateWithLifecycle()
     val filterByList = viewModel.filterByList.collectAsStateWithLifecycle()
@@ -258,6 +263,9 @@ fun HomeScreen(
                                 typeItem = typeItem,
                                 pendingTasksCount = 6,
                                 totalTasksCount = 10,
+                                selectTodoType = { todoType ->
+                                    viewModel.filterTodosByTodoType(todoType)
+                                },
                                 editTodoType = { todoType ->
                                     todoTypeViewModel.show(todoType.typeId)
                                 }
@@ -363,6 +371,7 @@ fun HeaderTypeCard(
     typeItem: TodoType,
     pendingTasksCount: Int,
     totalTasksCount: Int,
+    selectTodoType: (todoType: TodoType) -> Unit,
     editTodoType: (todoType: TodoType) -> Unit
 ) {
     val progress by remember { mutableFloatStateOf((pendingTasksCount.toFloat() / totalTasksCount.toFloat()).toFloat()) }
@@ -372,6 +381,7 @@ fun HeaderTypeCard(
             .padding(10.dp)
             .combinedClickable(
                 onClick = {
+                    selectTodoType(typeItem)
                 },
                 onLongClick = {
                     editTodoType(typeItem)
@@ -504,7 +514,11 @@ fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: Ho
         },
         supportingContent = {
 //            Text(todoItem.todoTypeName)
-            Text(todoItem.description)
+            Column {
+                Text(todoItem.description)
+            Text(Utils.viewDateTimeFromString(todoItem.createdOn))
+            Text(Utils.viewDateTimeFromString(todoItem.target))
+            }
 
         },
         leadingContent = {

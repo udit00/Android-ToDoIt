@@ -48,6 +48,17 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
         }
     }
 
+    suspend fun getTodosFromRoomDbFilterByTodoTypeId(todoTypeId: Int, todoStatusId: Int, response: (listOfTodos: ArrayList<TodoView>) -> Unit) {
+//        roomDB.todoDao.getAllTodo().collectLatest {
+//            var l: ArrayList<Todo> = ArrayList()
+//            response(it.toCollection(l))
+//        }
+        roomDB.todoDao.getAllTodoAsViewByTodoTypeId(todoTypeId = todoTypeId, todoStatusId = todoStatusId).collectLatest {
+            var l: ArrayList<TodoView> = ArrayList()
+            response(it.toCollection(l))
+        }
+    }
+
     suspend fun getTodoTypesFromRoomDb(response: (listOfTodoTypes: List<TodoType>) -> Unit) {
         roomDB.todoTypeDao.getTodoTypes().collectLatest {
             response(it)

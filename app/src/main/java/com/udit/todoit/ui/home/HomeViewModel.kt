@@ -34,10 +34,36 @@ import javax.inject.Inject
 //    LATER
 //}
 
-sealed class FilterBy(val name: String, val icon: ImageVector, val color: Color, val isLight: Boolean) {
-    data object PENDING: FilterBy(name = "Pending", icon = Icons.Filled.DateRange, color = TodoStatusColors.colorPending, isLight = true)
-    data object COMPLETED: FilterBy(name = "Completed", icon = Icons.Filled.CheckCircle, color = TodoStatusColors.colorCompleted, isLight = false)
-    data object LATER: FilterBy(name = "Later", icon = Icons.Outlined.Lock, color = TodoStatusColors.colorLater, isLight = false)
+sealed class FilterBy(
+    val id: Int,
+    val name: String,
+    val icon: ImageVector,
+    val color: Color,
+    val isLight: Boolean
+) {
+    data object PENDING : FilterBy(
+        id = 1,
+        name = "Pending",
+        icon = Icons.Filled.DateRange,
+        color = TodoStatusColors.colorPending,
+        isLight = true
+    )
+
+    data object COMPLETED : FilterBy(
+        id = 2,
+        name = "Completed",
+        icon = Icons.Filled.CheckCircle,
+        color = TodoStatusColors.colorCompleted,
+        isLight = false
+    )
+
+    data object LATER : FilterBy(
+        id = 3,
+        name = "Later",
+        icon = Icons.Outlined.Lock,
+        color = TodoStatusColors.colorLater,
+        isLight = false
+    )
 }
 
 @HiltViewModel
@@ -47,15 +73,20 @@ class HomeViewModel @Inject constructor(
     private val navigationProvider: NavigationProvider
 ) : BaseViewModel() {
 
-    @Inject lateinit var roomDB: TodoDatabase
+    @Inject
+    lateinit var roomDB: TodoDatabase
 
     private val _todos: MutableStateFlow<ArrayList<TodoView>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
 
+    private val _selectedTodoType: MutableStateFlow<TodoType?> = MutableStateFlow(null)
+    val selectedTodoType get() = _selectedTodoType.asStateFlow()
+
     private val _todoTypes: MutableStateFlow<List<TodoType>> = MutableStateFlow(arrayListOf())
     val todoTypes get() = _todoTypes.asStateFlow()
 
-    private val _todoStatusList: MutableStateFlow<List<TodoStatus>> = MutableStateFlow(arrayListOf())
+    private val _todoStatusList: MutableStateFlow<List<TodoStatus>> =
+        MutableStateFlow(arrayListOf())
     val todoStatusList get() = _todoStatusList.asStateFlow()
 
     private val _showAddTodoTypeAlert: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -80,6 +111,10 @@ class HomeViewModel @Inject constructor(
 
     fun changeFilter(filterBy: FilterBy) {
         _selectedFilterBy.value = filterBy
+        getTodosFromRoomDB(
+            todoTypeId = selectedTodoType.value?.typeId?:0,
+            todoStatusId = filterBy.id
+        )
     }
 
     init {
@@ -92,8 +127,11 @@ class HomeViewModel @Inject constructor(
         getFilterByList()
         getUserData()
         getTodoTypesFromRoomDb()
-        getTodosFromRoomDB()
         getTodoStatusFromRoomDb()
+        getTodosFromRoomDB(
+            todoTypeId = selectedTodoType.value?.typeId ?: 0,
+            todoStatusId = selectedFilterBy.value.id
+        )
     }
 
     private fun getFilterByList() {
@@ -138,12 +176,19 @@ class HomeViewModel @Inject constructor(
 //        }
 //    }
 
-    private fun getTodosFromRoomDB(searchValue: String? = "") {
+    private fun getTodosFromRoomDB(todoTypeId: Int, todoStatusId: Int, searchValue: String = "") {
+        _todos.value = arrayListOf()
         viewModelScope.launch {
-            homeRepository.getTodosFromRoomDb { list ->
+            if (todoTypeId == 0) {
+                homeRepository.getTodosFromRoomDb { list ->
 //                _todos.value = list
-                _todos.value = list
+                    _todos.value = list
 
+                }
+            } else {
+                homeRepository.getTodosFromRoomDbFilterByTodoTypeId(todoTypeId = todoTypeId, todoStatusId = todoStatusId) { list ->
+                    _todos.value = list
+                }
             }
         }
     }
@@ -155,9 +200,26 @@ class HomeViewModel @Inject constructor(
                 val types: MutableList<TodoType> = it.toMutableList()
                 //
                 _todoTypes.value = types
+                if (selectedTodoType.value == null && types.isNotEmpty()) {
+                    _selectedTodoType.value = _todoTypes.value[0]
+                }
 //                types.add()
             }
         }
+    }
+
+    fun filterTodosByTodoType(todoType: TodoType) {
+        _selectedTodoType.value = todoType
+        getTodosFromRoomDB(todoTypeId = todoType.typeId, todoStatusId = selectedFilterBy.value.id)
+//        val statusId: Int = selectedFilterBy.value.id
+//        viewModelScope.launch {
+//            val typeId = todoType?.typeId ?: 0
+//            getTodosFromRoomDB(
+//                searchValue = "",
+//                todoTypeId = typeId,
+//                todoStatusId = statusId
+//            )
+//        }
     }
 
     private fun getTodoStatusFromRoomDb() {
@@ -215,7 +277,7 @@ class HomeViewModel @Inject constructor(
 
     fun logOut() {
         val isRemoved = storageHelper.remove(StorageHelper.LOGIN_PREF_TAG)
-        if(isRemoved) {
+        if (isRemoved) {
             navigationProvider.navController.navigate(Screen.LoginPage) {
                 popUpTo(0)
             }

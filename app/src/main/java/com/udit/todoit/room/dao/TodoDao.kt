@@ -26,8 +26,18 @@ interface TodoDao {
             "ts.statusName as todoStatusName, ts.statusColor as todoStatusColor, ts.isColorLight as todoStatusIsLight " +
             "FROM todo t " +
             "inner join todotype tt on tt.typeId = t.todoTypeID " +
-            "inner join todostatus ts on ts.statusID = t.todoCompletionStatusID ")
+            "inner join todostatus ts on ts.statusID = t.todoCompletionStatusID" )
     fun getAllTodoAsView(): Flow<List<TodoView>>
+
+    @Query("SELECT t.*, " +
+            "tt.typename as todoTypeName, tt.color as todoTypeColor, tt.isLight as todoTypeIsLight, " +
+            "ts.statusName as todoStatusName, ts.statusColor as todoStatusColor, ts.isColorLight as todoStatusIsLight " +
+            "FROM todo t " +
+            "inner join todotype tt on tt.typeId = t.todoTypeID " +
+            "inner join todostatus ts on ts.statusID = t.todoCompletionStatusID " +
+            "where t.todoTypeID = :todoTypeId " +
+            "and ts.statusID = :todoStatusId")
+    fun getAllTodoAsViewByTodoTypeId(todoTypeId: Int, todoStatusId: Int): Flow<List<TodoView>>
 
     @Query("SELECT EXISTS(select * from todo where title = :title and description = :description)")
     suspend fun ifTodoAlreadyExists(title: String, description: String): Boolean
