@@ -4,6 +4,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -50,6 +51,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -71,12 +74,15 @@ import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeCount
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeView
 import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
 import com.udit.todoit.ui.home.model.TodoView
 import com.udit.todoit.utils.Utils
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -257,17 +263,18 @@ fun HomeScreen(
                     ) {
                         itemsIndexed(
                             items = todoTypeList.value,
-                            key = { index: Int, item: TodoType -> item.typeId }
+                            key = { index: Int, item: TodoTypeView -> item.todoTypeId }
                         ) { index, typeItem ->
                             HeaderTypeCard(
                                 typeItem = typeItem,
-                                pendingTasksCount = 6,
-                                totalTasksCount = 10,
+                                viewModel = viewModel,
+//                                pendingTasksCount = 6,
+//                                totalTasksCount = 10,
                                 selectTodoType = { todoType ->
                                     viewModel.filterTodosByTodoType(todoType)
                                 },
                                 editTodoType = { todoType ->
-                                    todoTypeViewModel.show(todoType.typeId)
+                                    todoTypeViewModel.show(todoType.todoTypeId)
                                 }
                             )
                         }
@@ -290,7 +297,7 @@ fun HomeScreen(
                                 Icon(imageVector = filter.icon, contentDescription = "")
                             },
                             border = BorderStroke(
-                                color = if(isSelected) animateColorAsState(
+                                color = if (isSelected) animateColorAsState(
                                     targetValue = Color.Black,
                                     label = "",
                                     animationSpec = tween(
@@ -301,10 +308,10 @@ fun HomeScreen(
                                 ).value
                                 else
 //                                Color.Transparent,
-                                filter.color,
-                                width = if(isSelected) 1.dp else 2.dp,
+                                    filter.color,
+                                width = if (isSelected) 1.dp else 2.dp,
 
-                            ),
+                                ),
                             colors = SelectableChipColors(
                                 containerColor = animateColorAsState(
                                     targetValue = Color.LightGray,
@@ -323,7 +330,7 @@ fun HomeScreen(
                                 disabledSelectedContainerColor = Color.Transparent,
                                 disabledLabelColor = Color.Transparent,
                                 labelColor = filter.color,
-                                selectedLabelColor = if(filter.isLight) Color.Black else Color.White,
+                                selectedLabelColor = if (filter.isLight) Color.Black else Color.White,
                                 selectedLeadingIconColor = Color.Black,
                                 selectedContainerColor = filter.color,
                                 selectedTrailingIconColor = Color.Transparent
@@ -368,14 +375,37 @@ fun HomeScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeaderTypeCard(
-    typeItem: TodoType,
-    pendingTasksCount: Int,
-    totalTasksCount: Int,
-    selectTodoType: (todoType: TodoType) -> Unit,
-    editTodoType: (todoType: TodoType) -> Unit
+    typeItem: TodoTypeView,
+    viewModel: HomeViewModel,
+    selectTodoType: (todoType: TodoTypeView) -> Unit,
+    editTodoType: (todoType: TodoTypeView) -> Unit
 ) {
-    val progress by remember { mutableFloatStateOf((pendingTasksCount.toFloat() / totalTasksCount.toFloat()).toFloat()) }
+//    val progress by remember { mutableFloatStateOf((pendingTasksCount.toFloat() / totalTasksCount.toFloat()).toFloat()) }
 //    val progress by remember { mutableFloatStateOf(0.6f) }
+//    val todoTypeCount: MutableState<TodoTypeCount> = remember { mutableStateOf(TodoTypeCount(
+//        todoTypeId = 0,
+//        todoTypeName = "",
+//        totalCount = 0,
+//        pendingCount = 0,
+//        laterCount = 0,
+//        completedCount = 0
+//    )) }
+
+//    LaunchedEffect("") {
+//        viewModel.getTodoTypeCount(todoTypeId = typeItem.todoTypeId, {
+//            todoTypeCount.value = it
+//            Log.d("TODO_COUNT", it.toString())
+//        })
+//    }
+    val animationSpecForLinearProgression = remember {
+        tween<Float>(
+            easing = EaseIn,
+            delayMillis = 500,
+            durationMillis = 2500
+        )
+    }
+    Log.d("HEADERTYPECARD", "RENDER")
+
     Card(
         modifier = Modifier
             .padding(10.dp)
@@ -395,7 +425,7 @@ fun HeaderTypeCard(
 
         Column(
             modifier = Modifier
-                .width(180.dp)
+//                .width(150.dp)
                 .background(
                     color = Color.Gray
 //                    brush = Brush.linearGradient(
@@ -418,19 +448,45 @@ fun HeaderTypeCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
-                Text(
-                    modifier = Modifier
-                        .padding(start = 15.dp, top = 10.dp),
-                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-//                                  .background(Color.Red),
-                    text = "${totalTasksCount} Tasks",
-                    color = Color.Black
+//                Text(
+//                    modifier = Modifier
+//                        .padding(start = 15.dp, top = 10.dp),
+//                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+////                                  .background(Color.Red),
+//                    text = "${totalTasksCount} Tasks",
+//                    color = Color.Black
+//                )
+
+                CardTextWithText(
+                    cardColors = CardColors(
+                        containerColor = Color(value = typeItem.color.toULong()),
+//                    containerColor = Color.Red,
+                        contentColor = Color.Green,
+                        disabledContentColor = Color.Blue,
+                        disabledContainerColor = Color.Green
+                    ),
+                    cardModifier = Modifier
+                        .padding(start = 10.dp),
+                    textComposable = {
+                        Text(
+                            fontSize = TextUnit(value = 18f, type = TextUnitType.Sp),
+                            text = typeItem.todoTypeName,
+                            modifier = Modifier
+                                .padding(vertical = 0.dp, horizontal = 10.dp),
+                            color = if (typeItem.isLight) {
+                                Color.Black
+                            } else {
+                                Color.White
+                            }
+                        )
+                    }
+
                 )
 
                 IconButton(
                     modifier = Modifier
 //                        .background(Color.Red)
-                        .height(25.dp)
+//                        .height(25.dp)
                         .clip(CircleShape)
 //                        .background(Color.Red)
 //                        .padding(0.dp)
@@ -449,54 +505,157 @@ fun HeaderTypeCard(
                     )
                 }
             }
-            CardTextWithText(
-                cardColors = CardColors(
-                    containerColor = Color(value = typeItem.color.toULong()),
-//                    containerColor = Color.Red,
-                    contentColor = Color.Green,
-                    disabledContentColor = Color.Blue,
-                    disabledContainerColor = Color.Green
-                ),
-                cardModifier = Modifier
-                    .padding(start = 10.dp),
-                textComposable = {
-                    Text(
-                        fontSize = TextUnit(value = 18f, type = TextUnitType.Sp),
-                        text = typeItem.typename,
-                        modifier = Modifier
-                            .padding(vertical = 0.dp, horizontal = 10.dp),
-                        color = if (typeItem.isLight) {
-                            Color.Black
-                        } else {
-                            Color.White
-                        }
-                    )
-                }
+//            CardTextWithText(
+//                cardColors = CardColors(
+//                    containerColor = Color(value = typeItem.color.toULong()),
+////                    containerColor = Color.Red,
+//                    contentColor = Color.Green,
+//                    disabledContentColor = Color.Blue,
+//                    disabledContainerColor = Color.Green
+//                ),
+//                cardModifier = Modifier
+//                    .padding(start = 10.dp),
+//                textComposable = {
+//                    Text(
+//                        fontSize = TextUnit(value = 18f, type = TextUnitType.Sp),
+//                        text = typeItem.typename,
+//                        modifier = Modifier
+//                            .padding(vertical = 0.dp, horizontal = 10.dp),
+//                        color = if (typeItem.isLight) {
+//                            Color.Black
+//                        } else {
+//                            Color.White
+//                        }
+//                    )
+//                }
+//
+//            )
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.End
+//            ) {
+//                Text(
+//                    modifier = Modifier.padding(end = 15.dp),
+//                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+//                    text = "$pendingTasksCount /$totalTasksCount",
+//                    color = Color.Black
+//
+//                )
+//            }
 
-            )
-            Row(
+//            animateFloatAsState(
+//                label = "",
+//                targetValue = todoTypeCount.value.pendingCount!!.toFloat(),
+//                animationSpec = tween(
+//                    easing = EaseIn,
+//                    delayMillis = 2000,
+//                    durationMillis = 2000
+//                )
+//            ).value
+
+            Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    modifier = Modifier.padding(end = 15.dp),
-                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
-                    text = "$pendingTasksCount /$totalTasksCount",
-                    color = Color.Black
+                horizontalArrangement = Arrangement.Center
+            ){
+                val color: Color = TodoStatusColors.colorPending
+//                val floatValue: Float = if(typeItem.totalCount == 0) 0.0f else
+//                    typeItem.pendingCount.toFloat()/typeItem.totalCount.toFloat()
+                val floatValue = animateFloatAsState(
+                    animationSpec = animationSpecForLinearProgression,
+                    targetValue = if(typeItem.totalCount == 0) 0.0f else typeItem.pendingCount.toFloat()/typeItem.totalCount.toFloat(),
+                    label = ""
+                )
+                val helpingCountText = "${typeItem.pendingCount}/${typeItem.totalCount}"
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .height(7.dp)
+                        .width(200.dp)
+//                        .padding(top = 10.dp, bottom = 10.dp, start = 15.dp, end = 15.dp),
+                        .padding(start = 15.dp, end = 15.dp),
+                    color = color,
+                    trackColor = Color.Black,
+                    strokeCap = StrokeCap.Round,
+                    progress = { floatValue.value }
+                )
 
+                Text(
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+                    text = helpingCountText,
+                    color = Color.Black
                 )
             }
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .height(30.dp)
-//                                  .padding(15.dp),
-                    .padding(bottom = 10.dp, start = 15.dp, end = 15.dp),
-                color = Color(value = typeItem.color.toULong()),
-                trackColor = Color.Black,
-                strokeCap = StrokeCap.Round,
-                progress = { progress }
-            )
+
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                val color: Color = TodoStatusColors.colorCompleted
+//                val floatValue: Float = if(typeItem.totalCount == 0) 0.0f else
+//                    typeItem.completedCount.toFloat()/typeItem.totalCount.toFloat()
+                val floatValue = animateFloatAsState(
+                    animationSpec = animationSpecForLinearProgression,
+                    targetValue = if(typeItem.totalCount == 0) 0.0f else typeItem.completedCount.toFloat()/typeItem.totalCount.toFloat(),
+                    label = ""
+                )
+                val helpingCountText = "${typeItem.completedCount}/${typeItem.totalCount}"
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .height(7.dp)
+                        .width(200.dp)
+//                        .padding(top = 10.dp, bottom = 10.dp, start = 15.dp, end = 15.dp),
+                        .padding(start = 15.dp, end = 15.dp),
+                    color = color,
+                    trackColor = Color.Black,
+                    strokeCap = StrokeCap.Round,
+                    progress = { floatValue.value }
+                )
+
+                Text(
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+                    text = helpingCountText,
+                    color = Color.Black
+                )
+            }
+
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                val color: Color = TodoStatusColors.colorLater
+//                val floatValue: Float = if(typeItem.totalCount == 0) 0.0f else
+//                    typeItem.laterCount.toFloat()/typeItem.totalCount.toFloat()
+                val floatValue = animateFloatAsState(
+                    animationSpec = animationSpecForLinearProgression,
+                    targetValue = if(typeItem.totalCount == 0) 0.0f else typeItem.laterCount.toFloat()/typeItem.totalCount.toFloat(),
+                    label = ""
+                )
+                val helpingCountText = "${typeItem.laterCount}/${typeItem.totalCount}"
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .height(7.dp)
+                        .width(200.dp)
+//                        .padding(top = 10.dp, bottom = 10.dp, start = 15.dp, end = 15.dp),
+                        .padding(start = 15.dp, end = 15.dp),
+                    color = color,
+                    trackColor = Color.Black,
+                    strokeCap = StrokeCap.Round,
+                    progress = { floatValue.value }
+                )
+
+                Text(
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = TextUnit(value = 11f, type = TextUnitType.Sp),
+                    text = helpingCountText,
+                    color = Color.Black
+                )
+            }
+
         }
     }
 }
@@ -516,8 +675,8 @@ fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: Ho
 //            Text(todoItem.todoTypeName)
             Column {
                 Text(todoItem.description)
-            Text(Utils.viewDateTimeFromString(todoItem.createdOn))
-            Text(Utils.viewDateTimeFromString(todoItem.target))
+                Text(Utils.viewDateTimeFromString(todoItem.createdOn))
+                Text(Utils.viewDateTimeFromString(todoItem.target))
             }
 
         },

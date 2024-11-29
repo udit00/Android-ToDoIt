@@ -16,6 +16,8 @@ import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeCount
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeView
 import com.udit.todoit.ui.home.model.TodoView
 import com.udit.todoit.ui.login.model.LoginModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -79,10 +81,10 @@ class HomeViewModel @Inject constructor(
     private val _todos: MutableStateFlow<ArrayList<TodoView>> = MutableStateFlow(arrayListOf())
     val todos get() = _todos.asStateFlow()
 
-    private val _selectedTodoType: MutableStateFlow<TodoType?> = MutableStateFlow(null)
+    private val _selectedTodoType: MutableStateFlow<TodoTypeView?> = MutableStateFlow(null)
     val selectedTodoType get() = _selectedTodoType.asStateFlow()
 
-    private val _todoTypes: MutableStateFlow<List<TodoType>> = MutableStateFlow(arrayListOf())
+    private val _todoTypes: MutableStateFlow<List<TodoTypeView>> = MutableStateFlow(arrayListOf())
     val todoTypes get() = _todoTypes.asStateFlow()
 
     private val _todoStatusList: MutableStateFlow<List<TodoStatus>> =
@@ -112,7 +114,7 @@ class HomeViewModel @Inject constructor(
     fun changeFilter(filterBy: FilterBy) {
         _selectedFilterBy.value = filterBy
         getTodosFromRoomDB(
-            todoTypeId = selectedTodoType.value?.typeId?:0,
+            todoTypeId = selectedTodoType.value?.todoTypeId?:0,
             todoStatusId = filterBy.id
         )
     }
@@ -129,10 +131,18 @@ class HomeViewModel @Inject constructor(
         getTodoTypesFromRoomDb()
         getTodoStatusFromRoomDb()
         getTodosFromRoomDB(
-            todoTypeId = selectedTodoType.value?.typeId ?: 0,
+            todoTypeId = selectedTodoType.value?.todoTypeId ?: 0,
             todoStatusId = selectedFilterBy.value.id
         )
     }
+
+//    fun getTodoTypeCount(todoTypeId: Int, response: (todoTypeCount: TodoTypeCount) -> Unit) {
+//        viewModelScope.launch {
+//            homeRepository.getTodoCountFromRoomDb(todoTypeId = todoTypeId, { todoTypeCount ->
+//                response(todoTypeCount)
+//            })
+//        }
+//    }
 
     private fun getFilterByList() {
         var filterByTempList: List<FilterBy> = listOf(
@@ -195,22 +205,26 @@ class HomeViewModel @Inject constructor(
 
     private fun getTodoTypesFromRoomDb() {
         viewModelScope.launch {
-            homeRepository.getTodoTypesFromRoomDb {
-//                _todoTypes.value = it
-                val types: MutableList<TodoType> = it.toMutableList()
-                //
+            homeRepository.getTodoTypesViewFromRoomDb { todoTypes ->
+                val types: MutableList<TodoTypeView> = todoTypes.toMutableList()
                 _todoTypes.value = types
                 if (selectedTodoType.value == null && types.isNotEmpty()) {
                     _selectedTodoType.value = _todoTypes.value[0]
                 }
-//                types.add()
             }
+//            homeRepository.getTodoTypesFromRoomDb {
+//                val types: MutableList<TodoType> = it.toMutableList()
+//                _todoTypes.value = types
+//                if (selectedTodoType.value == null && types.isNotEmpty()) {
+//                    _selectedTodoType.value = _todoTypes.value[0]
+//                }
+//            }
         }
     }
 
-    fun filterTodosByTodoType(todoType: TodoType) {
+    fun filterTodosByTodoType(todoType: TodoTypeView) {
         _selectedTodoType.value = todoType
-        getTodosFromRoomDB(todoTypeId = todoType.typeId, todoStatusId = selectedFilterBy.value.id)
+        getTodosFromRoomDB(todoTypeId = todoType.todoTypeId, todoStatusId = selectedFilterBy.value.id)
 //        val statusId: Int = selectedFilterBy.value.id
 //        viewModelScope.launch {
 //            val typeId = todoType?.typeId ?: 0
@@ -266,7 +280,8 @@ class HomeViewModel @Inject constructor(
             todoCompletionStatusID = todoView.todoCompletionStatusID
         )
         viewModelScope.launch {
-            homeRepository.upsertTodo(todo)
+            val todoId = homeRepository.upsertTodo(todo)
+            getTodoTypesFromRoomDb()
         }
     }
 

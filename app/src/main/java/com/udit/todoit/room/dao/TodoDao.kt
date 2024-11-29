@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface TodoDao {
 
     @Upsert
-    suspend fun upsertTodo(todo: Todo)
+    suspend fun upsertTodo(todo: Todo): Long
 
     @Delete
     suspend fun deleteTodo(todo: Todo)

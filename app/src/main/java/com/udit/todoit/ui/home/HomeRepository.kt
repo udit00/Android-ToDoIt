@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.home
 
+import android.util.Log
 import com.google.gson.Gson
 import com.udit.todoit.api.Api
 import com.udit.todoit.api.data.apipadhai.ApiPadhaiResponse
@@ -7,6 +8,8 @@ import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeCount
+import com.udit.todoit.ui.add_todo_type.models.TodoTypeView
 import com.udit.todoit.ui.home.model.TodoView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,6 +68,21 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
         }
     }
 
+    suspend fun getTodoTypesViewFromRoomDb(response: (listOfTodoTypesView: List<TodoTypeView>) -> Unit) {
+        roomDB.todoTypeDao.getTodoTypesView().collectLatest {
+            response(it)
+        }
+    }
+
+    suspend fun getTodoCountFromRoomDb(todoTypeId: Int, response: (todoTypeCount: TodoTypeCount) -> Unit) {
+        try {
+            val it = roomDB.todoTypeDao.getTodoTypeCount(todoTypeId)
+            response(it)
+        } catch (ex: Exception) {
+            Log.e("TODO_COUNT", ex.message.toString())
+        }
+    }
+
     suspend fun getAllTodoStatusFromRoomDb(response: (listOfTodoStatus: List<TodoStatus>) -> Unit) {
 //        roomDB.todoStatusDao.getAllTodoStatus().collectLatest {
 //            response(it)
@@ -74,8 +92,9 @@ class HomeRepository @Inject constructor(private val api: Api, private val roomD
 
 
 
-    suspend fun upsertTodo(todo: Todo) {
-        roomDB.todoDao.upsertTodo(todo)
+    suspend fun upsertTodo(todo: Todo): Long {
+        val todoId = roomDB.todoDao.upsertTodo(todo)
+        return todoId
     }
 
 
