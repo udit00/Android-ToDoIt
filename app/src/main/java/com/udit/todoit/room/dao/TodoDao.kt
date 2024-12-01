@@ -42,8 +42,8 @@ interface TodoDao {
     @Query("SELECT EXISTS(select * from todo where title = :title and description = :description)")
     suspend fun ifTodoAlreadyExists(title: String, description: String): Boolean
 
-//    @Query("Select tt.typename, t.* from todo t inner join todotype tt on tt.typeid where todoid = :todoId")
-//    fun getTodo(todoId: Todo): Flow<Todo>
+    @Query("Select t.* from todo t inner join todotype tt on tt.typeid where todoid = :todoId")
+    suspend fun getTodo(todoId: Int): Todo
 //
 //    @Query("Select tt.typename, t.* from todo t inner join todotype tt on tt.typeid where t.todoTypeID = :todoTypeId")
 //    fun getAllTodosFilterByType(todoTypeId: Int): Flow<List<Todo>>

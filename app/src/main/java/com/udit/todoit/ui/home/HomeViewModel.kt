@@ -285,8 +285,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun navigateToUpsertTodoScreen(todoId: Int? = -1) {
-        navigationProvider.navController.navigate(Screen.UpsertTodoPage)
+    fun navigateToUpsertTodoScreen(todoId: Int = -1) {
+//        val navigationExtras: Navigator
+        navigationProvider.navController.navigate(Screen.UpsertTodoPage(todoId = todoId))
     }
 
 

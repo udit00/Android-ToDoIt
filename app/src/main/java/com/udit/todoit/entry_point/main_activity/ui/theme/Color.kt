@@ -1,5 +1,7 @@
 package com.udit.todoit.entry_point.main_activity.ui.theme
 
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -19,6 +21,27 @@ val light_btn = Color(android.graphics.Color.parseColor("#E9F0F4"))
 val light_bg = Color(android.graphics.Color.parseColor("#F6F8F9"))
 val clear_light = Color(0xFFF1C8D1)
 
+object TodoCardColors {
+    val editButtonGradient =
+        Brush.linearGradient(
+            colors = listOf(
+                Color(
+                    red = 57,
+                    green = 182,
+                    blue = 158,
+                    alpha = 255
+                ),
+                Color(
+                    red = 61,
+                    green = 190,
+                    blue = 253,
+                    alpha = 255
+                )
+            )
+        )
+
+}
+
 object TodoStatusColors {
     val colorPending = Color(0xFFFF8400)
     val colorLater = Color(0xD50519A8)
@@ -35,14 +58,15 @@ sealed class ThemeColors(
     val surface: Color,
     val primary: Color,
     val text: Color
-)  {
-    object Night: ThemeColors(
+) {
+    object Night : ThemeColors(
         background = Color.Black,
         surface = dark_btn,
         primary = clear_dark,
         text = Color.White
     )
-    object Day: ThemeColors(
+
+    object Day : ThemeColors(
         background = light_bg,
         surface = light_btn,
         primary = clear_light,

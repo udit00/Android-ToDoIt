@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.udit.todoit.ui.login.LoginScreen
 import com.udit.todoit.entry_point.main_activity.navigation.Screen
 import com.udit.todoit.entry_point.main_activity.ui.theme.ToDoItTheme
@@ -97,7 +98,8 @@ fun MainScreen(
             HomeScreen()
         }
         composable<Screen.UpsertTodoPage> {
-            UpsertTodoScreen()
+            val args = it.toRoute<Screen.UpsertTodoPage>()
+            UpsertTodoScreen(args.todoId ?: -1)
         }
 
     }

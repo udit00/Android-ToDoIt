@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.udit.todoit.entry_point.main_activity.ui.theme.TodoCardColors
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
@@ -78,6 +79,7 @@ import com.udit.todoit.ui.add_todo_type.models.TodoTypeCount
 import com.udit.todoit.ui.add_todo_type.models.TodoTypeView
 import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
+import com.udit.todoit.ui.common_composables.GradientButton
 import com.udit.todoit.ui.home.model.TodoView
 import com.udit.todoit.utils.Utils
 
@@ -688,6 +690,44 @@ fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: Ho
         },
         trailingContent = {
             Column {
+
+//                GradientButton(
+//                    modifier = Modifier,
+//                    text = "Edit",
+//                    gradient = TodoCardColors.editButtonGradient,
+//                    onClick = {
+//                        viewModel.navigateToUpsertTodoScreen(todoId = todoItem.todoID)
+//                    }
+//                )
+
+                Card(
+                    modifier = Modifier,
+                    colors = CardColors(
+                        containerColor = Color.Black,
+                        disabledContainerColor = Color.Transparent,
+                        contentColor = Color.White,
+                        disabledContentColor = Color.Transparent
+                    ),
+                    border = BorderStroke(
+                        width = 1.dp,
+//                        color = Color(value = todoItem.todoStatusColor.toULong())
+                        color = Color.Gray
+                    ),
+                    onClick = {
+                        viewModel.navigateToUpsertTodoScreen(todoId = todoItem.todoID)
+//                        popupVisible.value = true
+                    }
+                ) {
+//                    Text(
+//                        modifier = Modifier.padding(5.dp),
+//                        text = "Edit"
+//                    )
+                    Icon(
+                        modifier = Modifier.padding(5.dp),
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = ""
+                    )
+                }
 
                 Card(
                     modifier = Modifier,

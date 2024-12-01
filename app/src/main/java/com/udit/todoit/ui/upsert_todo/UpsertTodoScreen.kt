@@ -66,9 +66,11 @@ import java.util.TimeZone
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpsertTodoScreen(
+    todoId: Int,
     viewModel: UpsertTodoViewModel = hiltViewModel(),
     todoTypeViewModel: AddTodoTypeViewModel = hiltViewModel()
 ) {
+
 
     val context = LocalContext.current
     val todoTypesList = viewModel.todoTypesList.collectAsStateWithLifecycle()
@@ -82,12 +84,13 @@ fun UpsertTodoScreen(
 
     LaunchedEffect(key1 = "") {
 //        viewModel.errorFlow.collectLatest {
-            viewModel.errorFlow.collectLatest { errMsg: String? ->
-                errMsg?.let {
+        viewModel.setTodoId(todoId = todoId)
+        viewModel.errorFlow.collectLatest { errMsg: String? ->
+            errMsg?.let {
 //                    Utils.showToast(context, it)
-                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             }
+        }
         todoTypeViewModel.isSaved.collectLatest {
             viewModel.getTypesList()
         }

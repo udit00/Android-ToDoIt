@@ -31,7 +31,10 @@ class UpsertTodoViewModel @Inject constructor(
     private val repository: UpsertTodoRepository,
     private val storageHelper: StorageHelper,
     private val navigationProvider: NavigationProvider
-): BaseViewModel() {
+) : BaseViewModel() {
+
+    private var todoId: Int = -1
+    var savedTodoData: Todo? = null
 
     val todoTitleError = mutableStateOf(false)
     val todoTitle = mutableStateOf("")
@@ -44,8 +47,9 @@ class UpsertTodoViewModel @Inject constructor(
     val selectedTodoType: MutableState<TodoType?> = mutableStateOf(null)
     private val _todoTypesList: MutableStateFlow<List<TodoType>> = MutableStateFlow(listOf())
     val todoTypesList get() = _todoTypesList
-    
+
     val showDatePicker = mutableStateOf(false)
+
     @OptIn(ExperimentalMaterial3Api::class)
     val targetDatePickerState = DatePickerState(
         locale = Locale.getDefault(),
@@ -71,6 +75,13 @@ class UpsertTodoViewModel @Inject constructor(
         getTypesList()
     }
 
+    fun setTodoId(todoId: Int) {
+        this.todoId = todoId
+        viewModelScope.launch {
+            getTodoDataFromID(todoId = todoId)
+        }
+    }
+
     fun getTypesList() {
         viewModelScope.launch {
             repository.getTypesForList { listOfTodoTypes ->
@@ -85,6 +96,45 @@ class UpsertTodoViewModel @Inject constructor(
     private fun getUserData() {
         val loginData = storageHelper.getLoginData()
         _userData.value = loginData
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    private suspend fun getTodoDataFromID(todoId: Int) {
+        if (todoId > 0) {
+            repository.getTodoDataByID(todoId = todoId) { todoData ->
+                savedTodoData = todoData
+                todoTitle.value = todoData.title
+                todoDescription.value = todoData.description
+                targetDatePickerState.selectedDateMillis =
+                    Utils.getTimeMillisFromString(todoData.target)
+                if (todoTypesList.value.isNotEmpty()) {
+                    selectedTodoType.value = findTodoTypeFromList(todoData.todoTypeID)
+                } else {
+                    findTodoTypeFromRoomDbAndSetToTodoType(todoData.todoTypeID)
+                }
+//
+            }
+        }
+    }
+
+    private fun findTodoTypeFromList(todoTypeId: Int): TodoType? {
+        if (todoTypesList.value.isNotEmpty()) {
+            for (i in 0 until todoTypesList.value.size) {
+                val type = todoTypesList.value[i]
+                if (type.typeId == todoTypeId) {
+                    return type
+                }
+            }
+        }
+        return null;
+    }
+
+    private fun findTodoTypeFromRoomDbAndSetToTodoType(searchTodoTypeId: Int) {
+        viewModelScope.launch {
+            repository.getTodoTypeDataById(todoTypeId = searchTodoTypeId) {
+                selectedTodoType.value = it
+            }
+        }
     }
 
 //    private fun validateAndSave(todoId: Int = 0) {
@@ -115,39 +165,48 @@ class UpsertTodoViewModel @Inject constructor(
     @OptIn(ExperimentalMaterial3Api::class)
     fun upsertTodo() {
         viewModelScope.launch {
-            if(todoTitle.value.isBlank()) {
+            if (todoTitle.value.isBlank()) {
                 notifyUserAboutError("Title cannot be empty.")
                 todoTitleError.value = true
                 return@launch
-            } else if(todoDescription.value.isBlank()) {
+            } else if (todoDescription.value.isBlank()) {
                 notifyUserAboutError("Description cannot be empty.")
                 return@launch
-            } else if(selectedTodoType.value == null) {
+            } else if (selectedTodoType.value == null) {
                 notifyUserAboutError("Select Todo Type.")
                 return@launch
-            } else if(targetDatePickerState.selectedDateMillis == null || targetDatePickerState.selectedDateMillis.toString().isBlank()) {
+            } else if (targetDatePickerState.selectedDateMillis == null || targetDatePickerState.selectedDateMillis.toString()
+                    .isBlank()
+            ) {
                 notifyUserAboutError("Select a Target Date.")
                 return@launch
-            } else if(userData.value == null) {
+            } else if (userData.value == null) {
                 notifyUserAboutError("Something went wrong, please try again.")
                 return@launch
             }
-            val createdOnDateTime: String = Utils.getCurrentDateTime().toString()
-            val targetDateTime: String = Utils.getDateTimeStringFromLong(targetDatePickerState.selectedDateMillis!!).toString()
+            val createdOnDateTime: String =
+                if (savedTodoData != null && savedTodoData?.createdOn?.isNotBlank() == true)
+                    savedTodoData?.createdOn.toString()
+                else
+                    Utils.getCurrentDateTime().toString()
+            val targetDateTime: String =
+                Utils.getDateTimeStringFromLong(targetDatePickerState.selectedDateMillis!!)
+                    .toString()
             logger(createdOnDateTime)
             logger(targetDateTime)
             val todo = Todo(
                 title = todoTitle.value,
                 description = todoDescription.value,
                 todoTypeID = selectedTodoType.value!!.typeId,
-                todoID = 0,
+                todoID = if (todoId > 0) todoId else 0,
                 createdOn = createdOnDateTime,
                 target = targetDateTime,
                 createId = userData.value!!.UserID,
-                todoCompletionStatusID = 1
+                todoCompletionStatusID = if (todoId > 0) savedTodoData?.todoCompletionStatusID
+                    ?: 1 else 1
             )
             repository.ifTodoAlreadyExists(todo) { ifExists ->
-                if(ifExists) {
+                if (ifExists) {
                     notifyUserAboutError("Todo already exists.")
                 } else {
                     viewModelScope.launch {
