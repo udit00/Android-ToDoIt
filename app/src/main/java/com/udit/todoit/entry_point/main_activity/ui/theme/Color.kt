@@ -42,6 +42,18 @@ object TodoCardColors {
 
 }
 
+object UpsertTodoColors {
+    val confirmBtnGradient =
+        Brush.linearGradient(
+            colors = listOf(
+                Color(red = 227, green = 60, blue = 124, alpha = 255),
+                Color(red = 239, green = 94, blue = 232, alpha = 255)
+            )
+        )
+
+}
+
+
 object TodoStatusColors {
     val colorPending = Color(0xFFFF8400)
     val colorLater = Color(0xD50519A8)

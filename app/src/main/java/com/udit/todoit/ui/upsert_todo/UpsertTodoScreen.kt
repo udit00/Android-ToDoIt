@@ -1,5 +1,7 @@
 package com.udit.todoit.ui.upsert_todo
 
+import android.app.TimePickerDialog
+import android.widget.Button
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,9 +23,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,21 +49,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.udit.todoit.R
+import com.udit.todoit.entry_point.main_activity.ui.theme.TodoCardColors
+import com.udit.todoit.entry_point.main_activity.ui.theme.UpsertTodoColors
 import com.udit.todoit.ui.add_todo_type.AddTodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoTypeViewModel
+import com.udit.todoit.ui.common_composables.GradientButton
 import kotlinx.coroutines.flow.collectLatest
 import java.time.format.DateTimeFormatter
 import java.util.TimeZone
@@ -80,6 +92,10 @@ fun UpsertTodoScreen(
 //    val datePickerState = rememberDatePickerState()
     val selectedDate = viewModel.targetDatePickerState.selectedDateMillis?.let {
         viewModel.convertMillisToDate(it)
+    } ?: ""
+
+    val selectedTime = viewModel.targetTimePickerState.let {
+        viewModel.convertTimeToView(it)
     } ?: ""
 
     LaunchedEffect(key1 = "") {
@@ -127,9 +143,8 @@ fun UpsertTodoScreen(
                 FloatingActionButton(
                     modifier = Modifier
                         .padding()
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
 //                        .background(color = Color.Red)
-                            ,
                     onClick = {
                         viewModel.upsertTodo()
                     },
@@ -157,7 +172,8 @@ fun UpsertTodoScreen(
             OutlinedTextField(
                 value = viewModel.todoTitle.value,
                 onValueChange = {
-                    if(viewModel.todoTitle.value.length < viewModel.todoTitleMaxChar) viewModel.todoTitle.value = it
+                    if (viewModel.todoTitle.value.length < viewModel.todoTitleMaxChar) viewModel.todoTitle.value =
+                        it
                     viewModel.todoTitleError.value = viewModel.todoTitle.value.isBlank()
                 },
                 label = { Text(text = "Todo Title.") },
@@ -179,7 +195,7 @@ fun UpsertTodoScreen(
                     capitalization = KeyboardCapitalization.Words
                 ),
 
-            )
+                )
 
             OutlinedTextField(
                 value = viewModel.todoDescription.value,
@@ -294,54 +310,150 @@ fun UpsertTodoScreen(
                 }
             }
 
-
-            OutlinedTextField(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                OutlinedTextField(
 //                value = viewModel.targetDate.value,
-                value = selectedDate,
-                onValueChange = { date ->
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(0.4f),
+                    value = selectedDate,
+                    onValueChange = { date ->
 //                    viewModel.targetDate.value = date
-                },
-                label = { Text("Target") },
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = {
-                        viewModel.showDatePicker.value = !viewModel.showDatePicker.value
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select date"
-                        )
-                    }
-                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(vertical = 0.dp, horizontal = 20.dp)
-//                    .height(64.dp)
-            )
+                    },
+                    label = { Text("Date") },
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            viewModel.showDatePicker.value = !viewModel.showDatePicker.value
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Select date"
+                            )
+                        }
+                    },
+                )
+
+                OutlinedTextField(
+//                value = viewModel.targetDate.value,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(0.3f),
+                    value = selectedTime,
+                    onValueChange = { time ->
+//                    viewModel.targetDate.value = date
+                    },
+                    label = { Text("Time") },
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            viewModel.showTimePicker.value = !viewModel.showTimePicker.value
+                        }) {
+                            Icon(
+                                painter = painterResource(R.drawable.icon_clock),
+                                contentDescription = "Select Time"
+                            )
+                        }
+                    },
+                )
+            }
 
             if (viewModel.showDatePicker.value) {
-                Popup(
+                DatePickerDialog(
                     onDismissRequest = { viewModel.showDatePicker.value = false },
-                    alignment = Alignment.TopStart
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.showDatePicker.value = false
+                            }
+                        ) {
+                            Text("Set")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.showDatePicker.value = false
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                    },
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .offset(y = 64.dp)
-                            .shadow(elevation = 4.dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
+                    DatePicker(
+                        state = viewModel.targetDatePickerState,
+                        modifier = Modifier,
+                    )
+                }
+
+            }
+
+            if (viewModel.showTimePicker.value) {
+                Dialog(
+                    onDismissRequest = {
+
+                    },
+                ) {
+                    Column(
+                        modifier = Modifier,
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        DatePicker(
-                            state = viewModel.targetDatePickerState,
-                            showModeToggle = false
+                        TimePicker(
+                            state = viewModel.targetTimePickerState
                         )
-//                        TimePicker(
-//                            state = viewModel.
-//                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+//                            GradientButton(
+//                                text = "Cancel",
+//                                modifier = Modifier.padding(10.dp),
+//                                onClick = {
+//                                    viewModel.showTimePicker.value = false
+//                                },
+//                                gradient = TodoCardColors.editButtonGradient
+//                            )
+                            GradientButton(
+                                text = "Confirm",
+                                modifier = Modifier.padding(20.dp),
+                                onClick = {
+                                    viewModel.showTimePicker.value = false
+                                },
+                                gradient = UpsertTodoColors.confirmBtnGradient
+                            )
+                        }
                     }
                 }
+//                Column {
+//                    TimePicker(
+//                        state = viewModel.targetTimePickerState,
+//                    )
+//                    Button(
+//                        onClick = {
+//                            viewModel.showTimePicker.value = false
+//                        }
+//                    ) {
+//                        Text("Close")
+//                    }
+//                    Button(
+//                        onClick = {
+//                            viewModel.showTimePicker.value = false
+//                        }
+//                    ) {
+//                        Text("Confirm")
+//                    }
+//                }
             }
+//                TimePicker(
+//                    state = viewModel.targetTimePickerState
+//                )
         }
     }
+
 }

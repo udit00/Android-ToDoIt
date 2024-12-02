@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -32,6 +34,8 @@ class UpsertTodoViewModel @Inject constructor(
     private val storageHelper: StorageHelper,
     private val navigationProvider: NavigationProvider
 ) : BaseViewModel() {
+
+    val currentTime = Calendar.getInstance()
 
     private var todoId: Int = -1
     var savedTodoData: Todo? = null
@@ -49,11 +53,18 @@ class UpsertTodoViewModel @Inject constructor(
     val todoTypesList get() = _todoTypesList
 
     val showDatePicker = mutableStateOf(false)
+    val showTimePicker = mutableStateOf(false)
 
     @OptIn(ExperimentalMaterial3Api::class)
     val targetDatePickerState = DatePickerState(
         locale = Locale.getDefault(),
         initialSelectedDateMillis = System.currentTimeMillis()
+    )
+    @OptIn(ExperimentalMaterial3Api::class)
+    val targetTimePickerState = TimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true
     )
 //    @OptIn(ExperimentalMaterial3Api::class)
 //    val targetDate = mutableStateOf(
@@ -221,8 +232,14 @@ class UpsertTodoViewModel @Inject constructor(
     }
 
     fun convertMillisToDate(millis: Long): String {
-        val formatter = SimpleDateFormat("EEE, MMM d HH:mm aaa", Locale.getDefault())
+        val formatter = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
+//        val formatter = SimpleDateFormat("EEE, MMM d HH:mm aaa", Locale.getDefault())
         return formatter.format(Date(millis))
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    fun convertTimeToView(timePickerState: TimePickerState): String {
+        return "${timePickerState.hour}:${timePickerState.minute}"
     }
 
     fun goBack() {
