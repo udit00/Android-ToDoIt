@@ -15,6 +15,7 @@ import com.udit.todoit.room.entity.Todo
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.shared_preferences.StorageHelper
 import com.udit.todoit.ui.login.model.LoginModel
+import com.udit.todoit.utils.DateUtils
 import com.udit.todoit.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,9 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoField
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalField
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -58,13 +62,16 @@ class UpsertTodoViewModel @Inject constructor(
     @OptIn(ExperimentalMaterial3Api::class)
     val targetDatePickerState = DatePickerState(
         locale = Locale.getDefault(),
-        initialSelectedDateMillis = System.currentTimeMillis()
+        initialSelectedDateMillis = System.currentTimeMillis(),
+
     )
     @OptIn(ExperimentalMaterial3Api::class)
-    val targetTimePickerState = TimePickerState(
-        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
-        initialMinute = currentTime.get(Calendar.MINUTE),
-        is24Hour = true
+    var targetTimePickerState = mutableStateOf(
+        TimePickerState(
+            initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+            initialMinute = currentTime.get(Calendar.MINUTE),
+            is24Hour = true
+        )
     )
 //    @OptIn(ExperimentalMaterial3Api::class)
 //    val targetDate = mutableStateOf(
@@ -114,10 +121,21 @@ class UpsertTodoViewModel @Inject constructor(
         if (todoId > 0) {
             repository.getTodoDataByID(todoId = todoId) { todoData ->
                 savedTodoData = todoData
+                val targetDateTime = DateUtils.getDateTimeFromString(todoData.target)
                 todoTitle.value = todoData.title
                 todoDescription.value = todoData.description
                 targetDatePickerState.selectedDateMillis =
-                    Utils.getTimeMillisFromString(todoData.target)
+//                    targetDateTime.getLong(ChronoField.MICRO_OF_DAY)
+                DateUtils.getTimeMillisFromDateTime(targetDateTime)
+//                    DateUtils.getTimeMillisFromString(todoData.target)
+//                    DateUtils.getTimeMillisFromDateTime(targetDateTime)
+                val localTargetTimePickerState = TimePickerState(
+                    initialHour = targetDateTime.hour,
+                    initialMinute = targetDateTime.minute,
+                    is24Hour = true
+                )
+                targetTimePickerState.value = localTargetTimePickerState
+
                 if (todoTypesList.value.isNotEmpty()) {
                     selectedTodoType.value = findTodoTypeFromList(todoData.todoTypeID)
                 } else {
@@ -199,12 +217,17 @@ class UpsertTodoViewModel @Inject constructor(
                 if (savedTodoData != null && savedTodoData?.createdOn?.isNotBlank() == true)
                     savedTodoData?.createdOn.toString()
                 else
-                    Utils.getCurrentDateTime().toString()
+                    DateUtils.getCurrentDateTime().toString()
             val targetDateTime: String =
-                Utils.getDateTimeStringFromLong(targetDatePickerState.selectedDateMillis!!)
-                    .toString()
-            logger(createdOnDateTime)
-            logger(targetDateTime)
+                targetDatePickerState.selectedDateMillis?.let {
+                    DateUtils.mergeDateAndTimeWithLong(it, targetTimePickerState.value)
+                } ?: DateUtils.getCurrentDateTime().toString()
+//                  DateUtils.mergeDateAndTimeWithLong(targetDatePickerState.selectedDateMillis?:DateUtils.getCurrentDateTime(), targetTimePickerState)
+//                DateUtils.getDateTimeStringFromLong(targetDatePickerState.selectedDateMillis!!)
+//                    .toString()
+//            logger(createdOnDateTime)
+//            logger(targetDateTime)
+//            return@launch
             val todo = Todo(
                 title = todoTitle.value,
                 description = todoDescription.value,
@@ -216,16 +239,20 @@ class UpsertTodoViewModel @Inject constructor(
                 todoCompletionStatusID = if (todoId > 0) savedTodoData?.todoCompletionStatusID
                     ?: 1 else 1
             )
-            repository.ifTodoAlreadyExists(todo) { ifExists ->
-                if (ifExists) {
-                    notifyUserAboutError("Todo already exists.")
-                } else {
-                    viewModelScope.launch {
-                        repository.upsertTodo(
-                            todo = todo
-                        )
+            logger(todoId.toString())
+            if(todo.todoID > 0) {
+                repository.upsertTodo(todo = todo)
+                goBack()
+            } else {
+                repository.ifTodoAlreadyExists(todo) { ifExists ->
+                    if (ifExists) {
+                        notifyUserAboutError("Todo already exists.")
+                    } else {
+                        viewModelScope.launch {
+                            repository.upsertTodo(todo = todo)
+                        }
+                        goBack()
                     }
-                    goBack()
                 }
             }
         }
@@ -239,7 +266,9 @@ class UpsertTodoViewModel @Inject constructor(
 
     @OptIn(ExperimentalMaterial3Api::class)
     fun convertTimeToView(timePickerState: TimePickerState): String {
-        return "${timePickerState.hour}:${timePickerState.minute}"
+        val hour = if(timePickerState.hour < 10) "0${timePickerState.hour}" else timePickerState.hour
+        val min = if(timePickerState.minute < 10) "0${timePickerState.minute}" else timePickerState.minute
+        return "${hour}:${min}"
     }
 
     fun goBack() {

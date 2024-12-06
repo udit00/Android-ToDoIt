@@ -95,8 +95,8 @@ fun UpsertTodoScreen(
     } ?: ""
 
     val selectedTime = viewModel.targetTimePickerState.let {
-        viewModel.convertTimeToView(it)
-    } ?: ""
+        viewModel.convertTimeToView(it.value)
+    }
 
     LaunchedEffect(key1 = "") {
 //        viewModel.errorFlow.collectLatest {
@@ -404,7 +404,7 @@ fun UpsertTodoScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         TimePicker(
-                            state = viewModel.targetTimePickerState
+                            state = viewModel.targetTimePickerState.value
                         )
                         Row(
                             modifier = Modifier.fillMaxWidth(),

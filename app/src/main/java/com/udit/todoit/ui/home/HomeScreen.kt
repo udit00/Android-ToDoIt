@@ -71,6 +71,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoCardColors
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
+import com.udit.todoit.env.ENV
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
@@ -81,6 +82,7 @@ import com.udit.todoit.ui.common_composables.CardText
 import com.udit.todoit.ui.common_composables.CardTextWithText
 import com.udit.todoit.ui.common_composables.GradientButton
 import com.udit.todoit.ui.home.model.TodoView
+import com.udit.todoit.utils.DateUtils
 import com.udit.todoit.utils.Utils
 
 import kotlinx.coroutines.Dispatchers
@@ -113,7 +115,7 @@ fun HomeScreen(
     val showAddTodoTypeAlert = todoTypeViewModel.showTodoType.collectAsStateWithLifecycle()
     val colorRed = Color.Red
 
-    viewModel.logger(colorRed.toString())
+//    viewModel.logger(colorRed.toString())
 
     Log.d("STATUS_LIST", todoStatusList.value.toString())
 
@@ -188,13 +190,31 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                Button(
-                    onClick = {
-//                    viewModel.insertTodo()
-                        viewModel.navigateToUpsertTodoScreen()
-                    }
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("Add")
+                    if(ENV.isDebugging) {
+                        Button(
+                            modifier = Modifier.padding(end = 50.dp),
+                            onClick = {
+                                Utils.showToast(
+                                    context = context,
+                                    msg = DateUtils.getCalenderDate()
+                                )
+                            }
+                        ) {
+                            Text("Test")
+                        }
+                    }
+                    Button(
+                        onClick = {
+//                    viewModel.insertTodo()
+                            viewModel.navigateToUpsertTodoScreen()
+                        }
+                    ) {
+                        Text("Add")
+                    }
                 }
             }
 //        modifier = Modifier.background(MaterialTheme.colorScheme.primary)
@@ -677,8 +697,8 @@ fun TodoCard(todoItem: TodoView, todoStatusList: List<TodoStatus>, viewModel: Ho
 //            Text(todoItem.todoTypeName)
             Column {
                 Text(todoItem.description)
-                Text(Utils.viewDateTimeFromString(todoItem.createdOn))
-                Text(Utils.viewDateTimeFromString(todoItem.target))
+                Text(DateUtils.viewDateTimeFromString(todoItem.createdOn))
+                Text(DateUtils.viewDateTimeFromString(todoItem.target))
             }
 
         },
