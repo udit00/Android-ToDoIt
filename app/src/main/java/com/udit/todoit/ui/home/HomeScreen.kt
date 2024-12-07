@@ -1,5 +1,6 @@
 package com.udit.todoit.ui.home
 
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
@@ -67,8 +68,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.udit.todoit.R
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoCardColors
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.env.ENV
@@ -89,6 +92,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+
+fun test(context: Context? = null) {
+    context?.let {
+        var builder = NotificationCompat.Builder(it, CHANNEL_ID)
+            .setSmallIcon(R.drawable.todoit_logo)
+            .setContentTitle("My notification")
+            .setContentText("Much longer text that cannot fit one line...")
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("Much longer text that cannot fit one line...")
+            )
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -198,10 +216,11 @@ fun HomeScreen(
                         Button(
                             modifier = Modifier.padding(end = 50.dp),
                             onClick = {
-                                Utils.showToast(
-                                    context = context,
-                                    msg = DateUtils.getCalenderDate()
-                                )
+//                                Utils.showToast(
+//                                    context = context,
+//                                    msg = DateUtils.getCalenderDate()
+//                                )
+                                test()
                             }
                         ) {
                             Text("Test")
