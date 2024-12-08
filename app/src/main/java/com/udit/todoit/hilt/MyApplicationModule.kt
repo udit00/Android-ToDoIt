@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.udit.todoit.api.Api
 import com.udit.todoit.entry_point.application.MyApp
+import com.udit.todoit.notification.NotificationHelper
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.shared_preferences.StorageHelper
 import dagger.Module
@@ -40,6 +41,12 @@ object MyApplicationModule {
     @Singleton
     fun providesTodoDatabase(myApp: MyApp): TodoDatabase {
         return Room.databaseBuilder(myApp.applicationContext, klass = TodoDatabase::class.java, name = "todo_db").build()
+    }
+
+    @Provides
+    @Singleton
+    fun providesNotificationHelper(myApp: MyApp): NotificationHelper {
+        return NotificationHelper(myApp)
     }
 
 }

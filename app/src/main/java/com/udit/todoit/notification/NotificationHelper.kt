@@ -12,6 +12,11 @@ import javax.inject.Inject
 
 class NotificationHelper @Inject constructor(val myApp: MyApp) {
 
+    companion object {
+        const val CHANNEL_ID_TARGET_DATE_TIME_MISSED = "TARGET_DATE_TIME_MISSED"
+        const val CHANNEL_ID_TARGET_DATE_TIME_REMINDER = "TARGET_DATE_TIME_REMINDER"
+    }
+
     data class MyNotification(
         val name: String,
         val description: String,
@@ -21,14 +26,14 @@ class NotificationHelper @Inject constructor(val myApp: MyApp) {
     fun createNecessaryChannels() {
         val notifications: List<MyNotification> = listOf(
             MyNotification(
-                name = "TARGET_DATE_TIME_MISSED_NAME",
+                name = "Missed Target.",
                 description = "When you miss your target date time.",
-                CHANNEL_ID ="TARGET_DATE_TIME_MISSED"
+                CHANNEL_ID = CHANNEL_ID_TARGET_DATE_TIME_MISSED
             ),
             MyNotification(
-                name = "TARGET_DATE_TIME_REMINDER_NAME",
+                name = "Todo Reminder",
                 description = "Reminder prior to target date and time.",
-                CHANNEL_ID ="TARGET_DATE_TIME_REMINDER"
+                CHANNEL_ID = CHANNEL_ID_TARGET_DATE_TIME_REMINDER
             ),
         )
 //        val name = getString(R.string.channel_name)

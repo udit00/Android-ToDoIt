@@ -1,10 +1,16 @@
 package com.udit.todoit.entry_point.main_activity
 
+import android.Manifest
+import android.os.Build
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.provider.Settings.Global
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -19,6 +25,7 @@ import com.udit.todoit.entry_point.main_activity.navigation.Screen
 import com.udit.todoit.entry_point.main_activity.ui.theme.ToDoItTheme
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.navigation.nav_provider.NavigationProvider
+import com.udit.todoit.notification.NotificationHelper
 import com.udit.todoit.room.TodoDatabase
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.ui.home.HomeScreen
@@ -37,10 +44,24 @@ class MainActivity @Inject constructor() : ComponentActivity() {
 
     @Inject
     lateinit var todoDatabase: TodoDatabase
-//    @Inject lateinit var navController: NavHostController
+
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
+
+    val TAG: String = "MainActivity"
+
+
+    //    @Inject lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+        if(::notificationHelper.isInitialized) {
+            Log.d(TAG, "Initialized")
+            notificationHelper.createNecessaryChannels()
+        } else {
+            Log.d(TAG, "Notification not initialized")
+        }
 //         GlobalScope.launch {
 //            todoDatabase.todoStatusDao.getCountOfStatus().collectLatest { count ->
 //                if(count <= 0) {
@@ -51,8 +72,16 @@ class MainActivity @Inject constructor() : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val scope = rememberCoroutineScope()
-            LaunchedEffect(key1 = "") {
+            val notificationPermissionResultLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = { isGranted ->
 
+                }
+            )
+            LaunchedEffect(key1 = "") {
+                if(Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+                    notificationPermissionResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
                 todoDatabase.todoStatusDao.getCountOfStatus().collectLatest { count ->
                     if (count <= 0) {
                         val todoStatus: List<TodoStatus> = listOf(

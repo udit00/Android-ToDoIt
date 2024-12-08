@@ -1,6 +1,7 @@
 package com.udit.todoit.ui.home
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
@@ -68,13 +69,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.udit.todoit.R
-import com.udit.todoit.entry_point.main_activity.ui.theme.TodoCardColors
 import com.udit.todoit.entry_point.main_activity.ui.theme.TodoStatusColors
 import com.udit.todoit.env.ENV
+import com.udit.todoit.notification.NotificationHelper
 import com.udit.todoit.room.entity.TodoStatus
 import com.udit.todoit.room.entity.TodoType
 import com.udit.todoit.ui.add_todo_type.AddTodoType
@@ -95,16 +98,30 @@ import kotlinx.coroutines.launch
 
 
 fun test(context: Context? = null) {
+//    context?.let {
+//        var builder = NotificationCompat.Builder(it, CHANNEL_ID)
+//            .setSmallIcon(R.drawable.todoit_logo)
+//            .setContentTitle("My notification")
+//            .setContentText("Much longer text that cannot fit one line...")
+//            .setStyle(
+//                NotificationCompat.BigTextStyle()
+//                    .bigText("Much longer text that cannot fit one line...")
+//            )
+//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//    }
     context?.let {
-        var builder = NotificationCompat.Builder(it, CHANNEL_ID)
+        var builder = NotificationCompat.Builder(it, NotificationHelper.CHANNEL_ID_TARGET_DATE_TIME_MISSED)
             .setSmallIcon(R.drawable.todoit_logo)
-            .setContentTitle("My notification")
-            .setContentText("Much longer text that cannot fit one line...")
-            .setStyle(
-                NotificationCompat.BigTextStyle()
-                    .bigText("Much longer text that cannot fit one line...")
-            )
+            .setContentTitle("Missed!!!")
+            .setContentText("Your Todo Target Date time has been missed.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(it)) {
+            if(ActivityCompat.checkSelfPermission(it, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//               request permission
+            }
+            notify(1, builder.build())
+        }
     }
 }
 
@@ -220,7 +237,7 @@ fun HomeScreen(
 //                                    context = context,
 //                                    msg = DateUtils.getCalenderDate()
 //                                )
-                                test()
+                                test(context = context)
                             }
                         ) {
                             Text("Test")
