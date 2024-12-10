@@ -6,6 +6,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "2.0.20"
     id("androidx.room")
+    id("com.google.gms.google-services")
 //    id("com.google.devtools.ksp")
 }
 
@@ -78,6 +79,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.gson)
+    implementation(libs.firebase.messaging.ktx)
     kapt(libs.hilt.android.compiler)
 //
 //    val room_version = "2.6.1"
@@ -88,6 +90,10 @@ dependencies {
     // To use Kotlin annotation processing tool (kapt)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
+    implementation(platform(libs.firebase.bom))
+
+
 
 
     //
