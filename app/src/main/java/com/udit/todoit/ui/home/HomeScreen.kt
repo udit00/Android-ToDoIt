@@ -2,6 +2,7 @@ package com.udit.todoit.ui.home
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
@@ -65,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -110,8 +112,11 @@ fun test(context: Context? = null) {
 //            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 //    }
     context?.let {
+        val largeIconBitmap = BitmapFactory.decodeResource(it.resources, R.drawable.todoit_logo)
         var builder = NotificationCompat.Builder(it, NotificationHelper.CHANNEL_ID_TARGET_DATE_TIME_MISSED)
-            .setSmallIcon(R.drawable.todoit_logo)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
+            .setLargeIcon(largeIconBitmap)
             .setContentTitle("Missed!!!")
             .setContentText("Your Todo Target Date time has been missed.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
